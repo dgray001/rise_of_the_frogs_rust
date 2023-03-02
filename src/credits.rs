@@ -1,3 +1,17 @@
+pub fn credits() {
+  println!("Created by Daniel Gray");
+  println!("2023 03 02");
+  println!("v0.0b: Basic commands");
+}
+
+pub fn welcome() {
+  asci();
+  credits();
+  println!("\nWelcome to 'Rise of the Frogs'");
+  println!("\nTo see the list of possible commands, type 'ls'");
+  println!("For general information on how the program works, type 'help'");
+}
+
 pub fn asci() {
   println!(r#"  ___ _                __   _   _          ___                 "#);
   println!(r#" | _ (_)___ ___   ___ / _| | |_| |_  ___  | __| _ ___  __ _ ___"#);
