@@ -2,46 +2,83 @@ mod system_commands;
 
 use std::collections::HashMap;
 
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
 use crate::context::RotfContext;
 
 pub fn parse_command(name: &str, context: &mut RotfContext) {
-  match context.commands.get(&String::from(name.trim())) {
-    Some(cmd) => (cmd.callback)(context),
+  let guaranteed_split = name.to_owned() + " ";
+  let name_split = guaranteed_split.split_once(" ").unwrap();
+  let last_cmd = name_split.0.trim().to_lowercase();
+  context.last_cmd = last_cmd.clone();
+  context.last_params = name_split.1.trim().to_lowercase();
+  let commands = context.commands.clone();
+  match commands.get(&last_cmd) {
+    Some(cmd) => cmd.call(context),
     None => println!("Invalid command."),
   }
   context.commands = get_current_commands();
 }
 
-pub struct Command<'a> {
-  name: &'a str,
-  description: &'a str,
-  callback: Box<dyn Fn(&RotfContext)>,
+#[derive(Clone, Debug, EnumIter)]
+pub enum Command {
+  LS,
+  HELP,
+  EXIT,
 }
 
-pub fn get_current_commands() -> HashMap<String, Command<'static>> {
-  let mut cmds = HashMap::new();
-  for cmd in get_system_commands() {
-    cmds.insert(String::from(cmd.name), cmd);
+impl Command {
+  const fn name(&self) -> &'static str {
+    match *self {
+      Command::LS => "ls",
+      Command::HELP => "help",
+      Command::EXIT => "exit",
+    }
   }
-  return cmds;
+  const fn description(&self) -> &'static str {
+    match *self {
+      Command::LS => "List available commands",
+      Command::HELP => "Display helptext about the specified",
+      Command::EXIT => "Exit the program",
+    }
+  }
+  const fn helptext(&self) -> &'static str {
+    match *self {
+      Command::LS => "ls",
+      Command::HELP => "help",
+      Command::EXIT => "exit",
+    }
+  }
+  const fn aliases(&self) -> Vec<&'static str> {
+    match *self {
+      Command::LS => vec![],
+      Command::HELP => vec![],
+      Command::EXIT => vec![],
+    }
+  }
+  fn call(&self, context: &mut RotfContext) {
+    match *self {
+      Command::LS => system_commands::ls(context),
+      Command::HELP => system_commands::help(context),
+      Command::EXIT => system_commands::exit(context),
+    }
+  }
 }
 
-fn get_system_commands() -> Vec<Command<'static>> {
-  let mut cmds = Vec::new();
-  cmds.push(Command {
-    name: "ls",
-    description: "List available commands",
-    callback: Box::new(system_commands::ls),
-  });
-  cmds.push(Command {
-    name: "help",
-    description: "List available commands",
-    callback: Box::new(system_commands::help),
-  });
-  cmds.push(Command {
-    name: "exit",
-    description: "List available commands",
-    callback: Box::new(system_commands::exit),
-  });
+pub fn get_current_commands() -> HashMap<String, Command> {
+  let mut cmds = HashMap::new();
+  for cmd in Command::iter() {
+    cmds.insert(cmd.name().to_string(), cmd.clone());
+    for alias in cmd.aliases() {
+      cmds.insert(alias.to_string(), cmd.clone());
+    }
+  }
+  /*for cmd in get_system_commands() {
+    cmds.insert(String::from(cmd.name), cmd.copy());
+    for alias in cmd.aliases {
+      cmds.insert(String::from("test"), &cmd);
+    }
+  }*/
   return cmds;
 }
