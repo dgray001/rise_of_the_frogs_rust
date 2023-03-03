@@ -1,7 +1,7 @@
 pub fn credits() {
   println!("Created by Daniel Gray");
   println!("2023 03 03");
-  println!("v0.0c: Aliases");
+  println!("v0.0d: Help args");
 }
 
 pub fn welcome() {
@@ -12,7 +12,7 @@ pub fn welcome() {
   println!("For general information on how the program works, type 'help'");
 }
 
-pub fn asci() {
+fn asci() {
   println!(r#"  ___ _                __   _   _          ___                 "#);
   println!(r#" | _ (_)___ ___   ___ / _| | |_| |_  ___  | __| _ ___  __ _ ___"#);
   println!(r#" |   / (_-</ -_) / _ \  _| |  _| ' \/ -_) | _| '_/ _ \/ _` (_-<"#);
