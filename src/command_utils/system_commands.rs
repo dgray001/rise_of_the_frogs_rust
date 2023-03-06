@@ -1,7 +1,7 @@
 use crate::context::RotfContext;
 
 pub fn ls(context: &RotfContext) {
-  for cmd in context.commands.values() {
+  for cmd in context.all_commands.values() {
     if cmd.aliases().is_empty() {
       println!("{}: {}", cmd.name(), cmd.description());
     } else {
@@ -18,11 +18,12 @@ pub fn help(context: &RotfContext) {
     println!("You interact with the program by typing a command");
     println!("Use the 'ls' command to see the current list of commands you can use");
     println!("No command is case-sensitive, so 'LS' is the same as 'ls'");
+    return;
   }
   match commands.get(&context.last_params) {
     Some(cmd) => cmd.helptext(),
     None => {
-      println!("{} is not a recognized command", context.last_params);
+      eprintln!("{} is not a recognized command", context.last_params);
       println!();
       println!("If you want general help text, use 'help'");
     },
