@@ -1,4 +1,5 @@
 #[path = "command_utils/commands.rs"] mod commands;
+#[path = "command_utils/file_contents.rs"] mod file_contents;
 #[path = "game_utils/game.rs"] mod game;
 #[path = "utils/filesystem.rs"] mod filesystem;
 

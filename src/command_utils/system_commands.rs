@@ -1,11 +1,19 @@
 use crate::context::RotfContext;
+use crate::commands::Command;
 
 pub fn ls(context: &RotfContext) {
-  for cmd in context.all_commands.values() {
+  println!("Context Commands:");
+  list_commands(Command::context_state_commands(context.context_state.clone()));
+  println!("\nSystem Commands:");
+  list_commands(Command::system_commands());
+}
+
+fn list_commands(cmds: Vec<Command>) {
+  for cmd in cmds {
     if cmd.aliases().is_empty() {
-      println!("{}: {}", cmd.name(), cmd.description());
+      println!("  {}: {}", cmd.name(), cmd.description());
     } else {
-      println!("{} (aliases: {}): {}", cmd.name(), cmd.aliases().join(", "), cmd.description());
+      println!("  {} (aliases: {}): {}", cmd.name(), cmd.aliases().join(", "), cmd.description());
     }
   }
 }

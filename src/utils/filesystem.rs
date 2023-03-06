@@ -21,6 +21,10 @@ pub fn open_folder_or_create(path: String) -> Result<Vec<PathBuf>, Error> {
   }
 }
 
+pub fn create_file(path: String, contents: String) -> Result<(), Error> {
+  fs::write(path, contents)
+}
+
 pub fn create_folder(path: String) -> Result<(), Error> {
   fs::create_dir_all(path)
 }

@@ -9,6 +9,9 @@ use strum_macros::EnumIter;
 use crate::{context::{RotfContext, ContextState}, credits};
 
 pub fn parse_command(name: &str, context: &mut RotfContext) {
+  if name.trim().is_empty() {
+    return;
+  }
   let guaranteed_split = name.to_owned() + " ";
   let name_split = guaranteed_split.split_once(" ").unwrap();
   let last_cmd = name_split.0.trim().to_lowercase();
@@ -24,12 +27,20 @@ pub fn parse_command(name: &str, context: &mut RotfContext) {
 
 #[derive(Clone, Debug, EnumIter)]
 pub enum Command {
+  // System Commands
   LS,
   HELP,
   EXIT,
   CREDITS,
+  // State::HOME Commands
   LAUNCH,
   DELETE,
+  // State::ENVIRONMENT Commands
+  VIEW,
+  TURN,
+  MOVE,
+  // State::COMBAT Commands
+  FLEE,
 }
 
 impl Command {
@@ -39,6 +50,7 @@ impl Command {
   fn context_state_commands(state: ContextState) -> Vec<Command> {
     match state {
       ContextState::HOME => vec![Command::LAUNCH, Command::DELETE],
+      _ => vec![],
     }
   }
 
@@ -50,6 +62,7 @@ impl Command {
       Command::CREDITS => "credits",
       Command::LAUNCH => "launch",
       Command::DELETE => "delete",
+      _ => "",
     }
   }
   const fn description(&self) -> &'static str {
@@ -60,6 +73,7 @@ impl Command {
       Command::CREDITS => "Display the credits",
       Command::LAUNCH => "Launches a new or saved game",
       Command::DELETE => "Delete the specified saved game",
+      _ => "Not implemented",
     }
   }
   fn helptext(&self) {
@@ -91,7 +105,10 @@ impl Command {
       Command::DELETE => {
         println!("Usage: 'delete {{arg}}'");
         println!("Delete an existing saved game permanently.");
-      }
+      },
+      _ => {
+        println!("Not implemented.");
+      },
     }
   }
   fn aliases(&self) -> Vec<&'static str> {
@@ -108,8 +125,9 @@ impl Command {
       Command::HELP => system_commands::help(context),
       Command::EXIT => system_commands::exit(),
       Command::CREDITS => credits::credits(),
-      Command::LAUNCH => context_state_commands::launch(&context.last_params),
+      Command::LAUNCH => context_state_commands::launch(context),
       Command::DELETE => context_state_commands::delete(&context.last_params),
+      _ => {},
     }
   }
 }

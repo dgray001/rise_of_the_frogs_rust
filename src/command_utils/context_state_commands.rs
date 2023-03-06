@@ -1,20 +1,20 @@
-use crate::filesystem::{open_folder_or_create, create_folder, delete_folder};
+use crate::{filesystem::{open_folder_or_create, create_folder, delete_folder, create_file}, file_contents, context::RotfContext, game::RotfGame};
 
 use std::{io::{self, Write, Error}, path::PathBuf, ffi::OsStr};
 
-pub fn launch(param: &String) {
-  if param.is_empty() {
+pub fn launch(context: &mut RotfContext) {
+  if context.last_params.is_empty() {
     println!("Must specify an arg when using launch");
     println!("Use 'launch {{new}}' to launch a new game");
     println!("Use 'launch {{saved_game_name}}' to launch a saved game");
     println!("Use 'launch ls' to list the current saved games");
     return;
   }
-  if param == "new" {
-    launch_new();
+  if context.last_params == "new" {
+    launch_new(context);
     return;
   }
-  if param == "ls" {
+  if context.last_params == "ls" {
     launch_ls();
     return;
   }
@@ -46,7 +46,7 @@ pub fn delete(param: &String) {
 }
 
 
-fn launch_new() {
+fn launch_new(context: &mut RotfContext) {
   let mut name = String::new();
   print!("Save name: ");
   io::stdout().flush().unwrap();
@@ -88,7 +88,17 @@ fn launch_new() {
       return;
     }
   }
-  println!("add files");
+  let game = RotfGame {
+    name: new_game.clone(),
+  };
+  match create_file(format!("data/saves/{}/metadata.rotf", new_game), file_contents::metadata_content(&game)) {
+    Ok(()) => {},
+    Err(e) => {
+      println!("Error creating new game: {}", e);
+      return;
+    }
+  }
+  context.curr_game = Some(game);
 }
 
 fn launch_ls() {

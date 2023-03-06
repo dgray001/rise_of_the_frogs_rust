@@ -6,6 +6,8 @@ use std::collections::HashMap;
 #[derive(Clone)]
 pub enum ContextState {
   HOME,
+  ENVIRONMENT,
+  COMBAT,
 }
 
 pub struct RotfContext {
