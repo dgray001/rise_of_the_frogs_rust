@@ -24,3 +24,7 @@ pub fn open_folder_or_create(path: String) -> Result<Vec<PathBuf>, Error> {
 pub fn create_folder(path: String) -> Result<(), Error> {
   fs::create_dir_all(path)
 }
+
+pub fn delete_folder(path: String) -> Result<(), Error> {
+  fs::remove_dir_all(path)
+}

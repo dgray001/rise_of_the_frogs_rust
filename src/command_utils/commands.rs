@@ -29,6 +29,7 @@ pub enum Command {
   EXIT,
   CREDITS,
   LAUNCH,
+  DELETE,
 }
 
 impl Command {
@@ -37,7 +38,7 @@ impl Command {
   }
   fn context_state_commands(state: ContextState) -> Vec<Command> {
     match state {
-      ContextState::HOME => vec![Command::LAUNCH],
+      ContextState::HOME => vec![Command::LAUNCH, Command::DELETE],
     }
   }
 
@@ -48,6 +49,7 @@ impl Command {
       Command::EXIT => "exit",
       Command::CREDITS => "credits",
       Command::LAUNCH => "launch",
+      Command::DELETE => "delete",
     }
   }
   const fn description(&self) -> &'static str {
@@ -57,6 +59,7 @@ impl Command {
       Command::EXIT => "Exit the program",
       Command::CREDITS => "Display the credits",
       Command::LAUNCH => "Launches a new or saved game",
+      Command::DELETE => "Delete the specified saved game",
     }
   }
   fn helptext(&self) {
@@ -85,6 +88,10 @@ impl Command {
         println!("Launch a saved game with 'launch {{saved_game_name}}");
         println!("View the list of saved games with 'launch ls'");
       },
+      Command::DELETE => {
+        println!("Usage: 'delete {{arg}}'");
+        println!("Delete an existing saved game permanently.");
+      }
     }
   }
   fn aliases(&self) -> Vec<&'static str> {
@@ -102,6 +109,7 @@ impl Command {
       Command::EXIT => system_commands::exit(),
       Command::CREDITS => credits::credits(),
       Command::LAUNCH => context_state_commands::launch(&context.last_params),
+      Command::DELETE => context_state_commands::delete(&context.last_params),
     }
   }
 }

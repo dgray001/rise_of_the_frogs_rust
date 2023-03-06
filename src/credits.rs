@@ -1,7 +1,7 @@
 pub fn credits() {
   println!("Created by Daniel Gray");
   println!("2023 03 05");
-  println!("v0.0e: Launch command");
+  println!("v0.0f: Delete command");
 }
 
 pub fn welcome() {

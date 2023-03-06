@@ -1,4 +1,4 @@
-use crate::filesystem::{open_folder_or_create, create_folder};
+use crate::filesystem::{open_folder_or_create, create_folder, delete_folder};
 
 use std::{io::{self, Write, Error}, path::PathBuf, ffi::OsStr};
 
@@ -20,6 +20,31 @@ pub fn launch(param: &String) {
   }
   launch_load();
 }
+
+pub fn delete(param: &String) {
+  if param.is_empty() {
+    println!("Must specify a saved game to delete.");
+    println!("You can view the current saved games with 'launch ls'.");
+    return;
+  }
+  match get_saved_games() {
+    Ok(entries) => {
+      for entry in entries {
+        let save_name = entry.file_name().unwrap_or_else(|| OsStr::new(""))
+          .to_string_lossy().trim().to_lowercase();
+        if &save_name == param {
+          delete_folder(format!("data/saves/{}", param)).unwrap_or_else(|e| {
+            println!("Error deleting saved game: {}", e);
+          });
+          return;
+        }
+      }
+    },
+    Err(e) => eprintln!("Error finding saved games: {}", e),
+  }
+  println!("Saved game doesn't exist.");
+}
+
 
 fn launch_new() {
   let mut name = String::new();
