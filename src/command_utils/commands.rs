@@ -1,14 +1,18 @@
 mod system_commands;
 mod context_state_commands;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, io::{Write, BufRead}};
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use crate::{context::{RotfContext, ContextState}, credits};
 
-pub fn parse_command(name: &str, context: &mut RotfContext) {
+pub fn parse_command<R, W, E>(name: &str, context: &mut RotfContext<R, W, E>)  where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
   if name.trim().is_empty() {
     return;
   }
@@ -119,7 +123,11 @@ impl Command {
       _ => vec![],
     }
   }
-  fn call(&self, context: &mut RotfContext) {
+  fn call<R, W, E>(&self, context: &mut RotfContext<R, W, E>) where
+    R: BufRead,
+    W: Write,
+    E: Write,
+  {
     match *self {
       Command::LS => system_commands::ls(context),
       Command::HELP => system_commands::help(context),
@@ -140,7 +148,11 @@ pub fn get_all_commands() -> HashMap<String, Command> {
   return cmds;
 }
 
-pub fn get_current_commands(context: &RotfContext) -> HashMap<String, Command> {
+pub fn get_current_commands<R, W, E>(context: &RotfContext<R, W, E>) -> HashMap<String, Command> where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
   let mut cmds = HashMap::new();
   let mut all_cmds: Vec<Command> = Vec::new();
   all_cmds.append(&mut Command::system_commands());

@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 strum = "0.24.1"
 strum_macros = "0.24.3"
+
+[dev-dependencies]
+assert_cmd = "2.0.8"
+predicates = "2.1.5"

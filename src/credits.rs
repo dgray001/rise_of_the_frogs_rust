@@ -1,7 +1,7 @@
 pub fn credits() {
   println!("Created by Daniel Gray");
-  println!("2023 03 06");
-  println!("v0.1: Create new game");
+  println!("2023 03 07");
+  println!("v0.1a: Refactor for testing");
 }
 
 pub fn welcome() {

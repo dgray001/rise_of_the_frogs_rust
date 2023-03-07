@@ -1,43 +1,40 @@
 #[path = "command_utils/commands.rs"] mod commands;
-#[path = "command_utils/file_contents.rs"] mod file_contents;
 #[path = "game_utils/game.rs"] mod game;
 #[path = "utils/filesystem.rs"] mod filesystem;
 
 mod credits;
 mod context;
+mod main_test;
 
 use context::RotfContext;
 
-use std::{io::{self, Write}, collections::HashMap};
+use std::io::{self, BufRead, Write};
 
 fn main() {
   credits::welcome();
 
-  let mut context: RotfContext = RotfContext {
-    context_state: context::ContextState::HOME,
-    all_commands: commands::get_all_commands(),
-    commands: HashMap::new(),
-    last_cmd: "".to_string(),
-    last_params: "".to_string(),
+  main_loop(io::stdin().lock(), io::stdout(), io::stderr());
+}
 
-    curr_game: None,
-  };
-  context.commands = commands::get_current_commands(&context);
+fn main_loop<R, W, E>(mut input: R, mut output: W, mut error: E) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  let mut context = RotfContext::default_context(input, output, error);
 
   loop {
-    println!("-------------------");
-    println!("");
-    print!(" > ");
-    io::stdout().flush().unwrap();
-    let mut cmd = String::new();
-    match io::stdin().read_line(&mut cmd) {
-      Ok(_n) => {
+    context.println("-------------------");
+    context.println("");
+    context.print(" > ");
+    match context.read_line() {
+      Ok(cmd) => {
         println!();
         commands::parse_command(&cmd, &mut context);
       },
       Err(e) => {
-        println!("Error reading command: {}", e);
-        println!();
+        context.print_error("reading command", &e);
+        context.println("");
       },
     }
   }

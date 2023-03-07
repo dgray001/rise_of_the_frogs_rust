@@ -1,7 +1,13 @@
+use std::io::{Write, BufRead};
+
 use crate::context::RotfContext;
 use crate::commands::Command;
 
-pub fn ls(context: &RotfContext) {
+pub fn ls<R, W, E>(context: &RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
   println!("Context Commands:");
   list_commands(Command::context_state_commands(context.context_state.clone()));
   println!("\nSystem Commands:");
@@ -18,7 +24,11 @@ fn list_commands(cmds: Vec<Command>) {
   }
 }
 
-pub fn help(context: &RotfContext) {
+pub fn help<R, W, E>(context: &RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
   let commands = context.commands.clone();
   if context.last_params.clone().is_empty() {
     println!("Below is general information; if you want information about a specific command use 'help {{cmd}}'");

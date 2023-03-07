@@ -1,8 +1,12 @@
-use crate::{filesystem::{open_folder_or_create, create_folder, delete_folder, create_file}, file_contents, context::RotfContext, game::RotfGame};
+use crate::{filesystem, context, game};
 
-use std::{io::{self, Write, Error}, path::PathBuf, ffi::OsStr};
+use std::{io::{self, Write, Error, BufRead}, path::PathBuf, ffi::OsStr};
 
-pub fn launch(context: &mut RotfContext) {
+pub fn launch<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
   if context.last_params.is_empty() {
     println!("Must specify an arg when using launch");
     println!("Use 'launch {{new}}' to launch a new game");
@@ -33,7 +37,7 @@ pub fn delete(param: &String) {
         let save_name = entry.file_name().unwrap_or_else(|| OsStr::new(""))
           .to_string_lossy().trim().to_lowercase();
         if &save_name == param {
-          delete_folder(format!("data/saves/{}", param)).unwrap_or_else(|e| {
+          filesystem::delete_folder(format!("data/saves/{}", param)).unwrap_or_else(|e| {
             println!("Error deleting saved game: {}", e);
           });
           return;
@@ -46,7 +50,11 @@ pub fn delete(param: &String) {
 }
 
 
-fn launch_new(context: &mut RotfContext) {
+fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
   let mut name = String::new();
   print!("Save name: ");
   io::stdout().flush().unwrap();
@@ -57,13 +65,13 @@ fn launch_new(context: &mut RotfContext) {
       return;
     },
   }
-  let new_game = name.trim().to_lowercase();
-  if new_game.is_empty() {
+  name = name.trim().to_lowercase();
+  if name.is_empty() {
     println!("Can't enter empty name.");
     return;
   }
   let mut current_games = Vec::new();
-  match open_folder_or_create("data/saves".to_string()) {
+  match filesystem::open_folder_or_create("data/saves".to_string()) {
     Ok(games) => {
       for game in games.iter() {
         current_games.push(game.file_name().unwrap_or_else(|| OsStr::new(""))
@@ -75,30 +83,22 @@ fn launch_new(context: &mut RotfContext) {
       return;
     }
   }
-  if current_games.contains(&new_game) {
+  if current_games.contains(&name) {
     println!("That saved game already exists.");
-    println!("To delete it use 'delete {}'.", new_game);
-    println!("To launch it use 'launch {}'.", new_game);
+    println!("To delete it use 'delete {}'.", name);
+    println!("To launch it use 'launch {}'.", name);
     return;
   }
-  match create_folder(format!("data/saves/{}", new_game)) {
+  let new_game = game::RotfGame::new(name.clone());
+  match new_game.save() {
     Ok(()) => {},
     Err(e) => {
       println!("Error creating new game: {}", e);
       return;
     }
   }
-  let game = RotfGame {
-    name: new_game.clone(),
-  };
-  match create_file(format!("data/saves/{}/metadata.rotf", new_game), file_contents::metadata_content(&game)) {
-    Ok(()) => {},
-    Err(e) => {
-      println!("Error creating new game: {}", e);
-      return;
-    }
-  }
-  context.curr_game = Some(game);
+  context.curr_game = Some(new_game);
+  context.context_state = context::ContextState::INGAME;
 }
 
 fn launch_ls() {
@@ -119,7 +119,7 @@ fn launch_load() {
 
 fn get_saved_games() -> Result<Vec<PathBuf>, Error> {
   let mut saved_games = Vec::new();
-  match open_folder_or_create("data/saves".to_string()) {
+  match filesystem::open_folder_or_create("data/saves".to_string()) {
     Ok(entries) => {
       for entry in entries {
         if entry.is_dir() {
