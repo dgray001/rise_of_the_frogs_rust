@@ -76,8 +76,30 @@ pub mod test_main {
     return (output_str.to_string(), error_str.to_string());
   }
 
+  pub fn run_cmd_input(cmd: &str, extra_input: &str) -> (String, String) {
+    let input = extra_input.as_bytes();
+    let mut output = Vec::new();
+    let mut error = Vec::new();
+    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    parse_command(cmd, &mut context);
+    let binding = output.clone();
+    let output_str = str::from_utf8(&binding).unwrap();
+    let binding = error.clone();
+    let error_str = str::from_utf8(&binding).unwrap();
+    return (output_str.to_string(), error_str.to_string());
+  }
+
   pub fn run_cmd_context(cmd: &str) -> TestContext {
     let input = "".as_bytes();
+    let mut output = Vec::new();
+    let mut error = Vec::new();
+    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    parse_command(cmd, &mut context);
+    return TestContext::new(context);
+  }
+
+  pub fn run_cmd_context_input(cmd: &str, extra_input: &str) -> TestContext {
+    let input = extra_input.as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
     let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);

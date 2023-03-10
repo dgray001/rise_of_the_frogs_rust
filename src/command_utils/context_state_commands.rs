@@ -1,6 +1,6 @@
 use crate::{filesystem, context::{self, RotfContext}, game};
 
-use std::{io::{self, Write, Error, BufRead}, path::PathBuf, ffi::OsStr};
+use std::{io::{Write, Error, BufRead}, path::PathBuf, ffi::OsStr};
 
 pub fn launch<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   R: BufRead,
@@ -31,8 +31,8 @@ pub fn delete<R, W, E>(context: &mut RotfContext<R, W, E>) where
   E: Write,
 {
   if context.last_params.is_empty() {
-    context.println("Must specify a saved game to delete.");
-    context.println("You can view the current saved games with 'launch ls'.");
+    context.println("Must specify a saved game to delete");
+    context.println("You can view the current saved games with 'launch ls'");
     return;
   }
   match get_saved_games() {
@@ -50,7 +50,7 @@ pub fn delete<R, W, E>(context: &mut RotfContext<R, W, E>) where
     },
     Err(e) => context.print_error("finding saved games", &e),
   }
-  context.println("Saved game doesn't exist.");
+  context.println("Saved game doesn't exist");
 }
 
 
@@ -59,10 +59,10 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   W: Write,
   E: Write,
 {
-  let mut name = String::new();
   context.print("Save name: ");
-  match io::stdin().read_line(&mut name) {
-    Ok(_n) => {},
+  let mut name;
+  match context.read_line() {
+    Ok(n) => name = n,
     Err(e) => {
       context.print_error("reading input", &e);
       return;
@@ -70,7 +70,7 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   }
   name = name.trim().to_lowercase();
   if name.is_empty() {
-    context.println("Can't enter empty name.");
+    context.println("Can't enter empty name");
     return;
   }
   let mut current_games = Vec::new();
@@ -87,7 +87,7 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     }
   }
   if current_games.contains(&name) {
-    context.println("That saved game already exists.");
+    context.println("That saved game already exists");
     context.println(&format!("To delete it use 'delete {}'.", name));
     context.println(&format!("To launch it use 'launch {}'.", name));
     return;
@@ -125,7 +125,20 @@ fn launch_load<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   W: Write,
   E: Write,
 {
-  context.println("Try to launch game.");
+  match get_saved_games() {
+    Ok(entries) => {
+      for entry in entries {
+        let save_name = entry.file_name().unwrap_or_else(|| OsStr::new(""))
+          .to_string_lossy().trim().to_lowercase();
+        if &save_name == &context.last_params {
+          context.print_data("Try open game", save_name);
+          return;
+        }
+      }
+    },
+    Err(e) => context.print_error("finding saved games", &e),
+  }
+  context.println("Saved game doesn't exist");
 }
 
 fn get_saved_games() -> Result<Vec<PathBuf>, Error> {
@@ -140,5 +153,92 @@ fn get_saved_games() -> Result<Vec<PathBuf>, Error> {
       Ok(saved_games)
     },
     Err(e) => Err(e),
+  }
+}
+
+
+#[cfg(test)]
+pub mod test_context_state_commands {
+  use std::path::Path;
+  use crate::{test_main::*, commands::context_state_commands::*};
+
+  #[test]
+  fn test_launch() {
+    let (output, error) = run_cmd_output("launch");
+    assert!(output.contains("Must specify an arg when using launch"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_launch_ls() {
+    let (output, error) = run_cmd_output("launch ls");
+    assert!(output.contains("test"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_launch_unknown() {
+    let (output, error) = run_cmd_output("launch unknown");
+    assert!(output.contains("Saved game doesn't exist"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_launch_new() {
+    let (output, error) = run_cmd_input("launch new", "test_new\n");
+    assert!(output.contains("Save name:"));
+    assert!(Path::new("data/saves/test_new").exists());
+    assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "test_new"));
+    assert_eq!(error, "");
+    run_cmd_output("delete test_new"); // clean up test
+  }
+
+  #[test]
+  fn test_launch_new_context() {
+    let context = run_cmd_context_input("launch new", "test_new_context\n");
+    assert!(Path::new("data/saves/test_new_context").exists());
+    assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "test_new_context"));
+    run_cmd_output("delete test_new_context"); // clean up test
+    assert_eq!(context.curr_game.unwrap().name, "test_new_context");
+  }
+
+  #[test]
+  fn test_launch_new_exists() {
+    assert!(Path::new("data/saves/test").exists());
+    let (output, error) = run_cmd_input("launch new", "test\n");
+    assert!(output.contains("Save name:"));
+    assert!(output.contains("That saved game already exists"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_launch_game() {
+    let (output, error) = run_cmd_output("launch test");
+    assert!(output.contains("Try open"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_delete() {
+    let (output, error) = run_cmd_output("delete");
+    assert!(output.contains("Must specify a saved game to delete"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_delete_unknown() {
+    let (output, error) = run_cmd_output("delete unknown");
+    assert!(output.contains("Saved game doesn't exist"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_delete_game() {
+    run_cmd_input("launch new", "deletable\n");
+    assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable"));
+    let (output, error) = run_cmd_output("delete deletable");
+    assert!(!get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable"));
+    assert_eq!(output, "");
+    assert_eq!(error, "");
   }
 }
