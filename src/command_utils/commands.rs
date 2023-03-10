@@ -8,23 +8,23 @@ use strum_macros::EnumIter;
 
 use crate::{context::{RotfContext, ContextState}, credits};
 
-pub fn parse_command<R, W, E>(name: &str, context: &mut RotfContext<R, W, E>)  where
+pub fn parse_command<R, W, E>(cmd: &str, context: &mut RotfContext<R, W, E>)  where
   R: BufRead,
   W: Write,
   E: Write,
 {
-  if name.trim().is_empty() {
+  if cmd.trim().is_empty() {
     return;
   }
-  let guaranteed_split = name.to_owned() + " ";
-  let name_split = guaranteed_split.split_once(" ").unwrap();
-  let last_cmd = name_split.0.trim().to_lowercase();
+  let guaranteed_split = cmd.to_owned() + " ";
+  let cmd_split = guaranteed_split.split_once(" ").unwrap();
+  let last_cmd = cmd_split.0.trim().to_lowercase();
   context.last_cmd = last_cmd.clone();
-  context.last_params = name_split.1.trim().to_lowercase();
+  context.last_params = cmd_split.1.trim().to_lowercase();
   let commands = context.commands.clone();
   match commands.get(&last_cmd) {
     Some(cmd) => cmd.call(context),
-    None => eprintln!("Invalid command."),
+    None => context.eprintln("Invalid command"),
   }
   context.commands = get_current_commands(context);
 }
@@ -80,38 +80,42 @@ impl Command {
       _ => "Not implemented",
     }
   }
-  fn helptext(&self) {
-    println!("Command: {}", self.name());
+  fn helptext<R, W, E>(&self, context: &mut RotfContext<R, W, E>) where
+    R: BufRead,
+    W: Write,
+    E: Write,
+  {
+    context.print_data("Command: {}", self.name());
     if !self.aliases().is_empty() {
-      println!("Aliases: {}", self.aliases().join(", "));
+      context.print_data("Aliases: {}", self.aliases().join(", "));
     }
     match *self {
       Command::LS => {
-        println!("Lists all available commands and a short description of how they work");
+        context.println("Lists all available commands and a short description of how they work");
       },
       Command::HELP => {
-        println!("Usage: 'help {{arg}}'");
-        println!("Prints helptext related to the specified arg");
-        println!("If no arg is specified will print general helptext");
+        context.println("Usage: 'help {{arg}}'");
+        context.println("Prints helptext related to the specified arg");
+        context.println("If no arg is specified will print general helptext");
       },
       Command::EXIT => {
-        println!("Exit the program");
+        context.println("Exit the program");
       },
       Command::CREDITS => {
-        println!("Display credits for the game");
+        context.println("Display credits for the game");
       },
       Command::LAUNCH => {
-        println!("Usage: 'launch {{arg}}'");
-        println!("Launch a new game with 'launch new'");
-        println!("Launch a saved game with 'launch {{saved_game_name}}");
-        println!("View the list of saved games with 'launch ls'");
+        context.println("Usage: 'launch {{arg}}'");
+        context.println("Launch a new game with 'launch new'");
+        context.println("Launch a saved game with 'launch {{saved_game_name}}");
+        context.println("View the list of saved games with 'launch ls'");
       },
       Command::DELETE => {
-        println!("Usage: 'delete {{arg}}'");
-        println!("Delete an existing saved game permanently.");
+        context.println("Usage: 'delete {{arg}}'");
+        context.println("Delete an existing saved game permanently.");
       },
       _ => {
-        println!("Not implemented.");
+        context.println("Not implemented.");
       },
     }
   }
@@ -131,10 +135,10 @@ impl Command {
     match *self {
       Command::LS => system_commands::ls(context),
       Command::HELP => system_commands::help(context),
-      Command::EXIT => system_commands::exit(),
-      Command::CREDITS => credits::credits(),
+      Command::EXIT => context.exit = true,
+      Command::CREDITS => credits::credits(context),
       Command::LAUNCH => context_state_commands::launch(context),
-      Command::DELETE => context_state_commands::delete(&context.last_params),
+      Command::DELETE => context_state_commands::delete(context),
       _ => {},
     }
   }

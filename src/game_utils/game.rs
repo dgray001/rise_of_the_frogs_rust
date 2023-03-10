@@ -4,8 +4,6 @@ use std::io::Error;
 
 pub enum GameState {
   CUTSCENE,
-  ENVIRONMENT,
-  COMBAT,
 }
 
 pub struct RotfGame {
