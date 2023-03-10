@@ -9,7 +9,7 @@ pub fn ls<R, W, E>(context: &mut RotfContext<R, W, E>) where
   E: Write,
 {
   context.println("Context Commands:");
-  list_commands(Command::context_state_commands(context.context_state.clone()), context);
+  list_commands(Command::context_state_commands(context), context);
   context.println("\nSystem Commands:");
   list_commands(Command::system_commands(), context);
 }

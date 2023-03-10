@@ -131,7 +131,7 @@ fn launch_load<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
         let save_name = entry.file_name().unwrap_or_else(|| OsStr::new(""))
           .to_string_lossy().trim().to_lowercase();
         if &save_name == &context.last_params {
-          context.print_data("Try open game", save_name);
+          context.curr_game = game::RotfGame::load(save_name).ok();
           return;
         }
       }
@@ -213,9 +213,8 @@ pub mod test_context_state_commands {
 
   #[test]
   fn test_launch_game() {
-    let (output, error) = run_cmd_output("launch test");
-    assert!(output.contains("Try open"));
-    assert_eq!(error, "");
+    let context = run_cmd_context("launch test");
+    assert_eq!(context.curr_game.unwrap().name, "test");
   }
 
   #[test]

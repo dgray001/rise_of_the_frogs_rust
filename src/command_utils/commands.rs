@@ -51,10 +51,19 @@ impl Command {
   fn system_commands() -> Vec<Command> {
     return vec![Command::LS, Command::HELP, Command::EXIT, Command::CREDITS];
   }
-  fn context_state_commands(state: ContextState) -> Vec<Command> {
-    match state {
+  fn context_state_commands<R, W, E>(context: &RotfContext<R, W, E>) -> Vec<Command> where
+    R: BufRead,
+    W: Write,
+    E: Write,
+  {
+    match context.context_state {
       ContextState::HOME => vec![Command::LAUNCH, Command::DELETE],
-      _ => vec![],
+      ContextState::INGAME => {
+        match &context.curr_game {
+          Some(game) => game.commands(),
+          None => vec![],
+        }
+      },
     }
   }
 
@@ -160,7 +169,7 @@ pub fn get_current_commands<R, W, E>(context: &RotfContext<R, W, E>) -> HashMap<
   let mut cmds = HashMap::new();
   let mut all_cmds: Vec<Command> = Vec::new();
   all_cmds.append(&mut Command::system_commands());
-  all_cmds.append(&mut Command::context_state_commands(context.context_state.clone()));
+  all_cmds.append(&mut Command::context_state_commands(context));
   for cmd in all_cmds {
     cmds.insert(cmd.name().to_string(), cmd.clone());
     for alias in cmd.aliases() {

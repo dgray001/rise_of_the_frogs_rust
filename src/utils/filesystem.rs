@@ -1,4 +1,9 @@
-use std::{fs, io::{self, Error}, path::PathBuf};
+use std::{fs, io::{self, Error, BufReader}, path::PathBuf};
+
+pub fn open_file(path: String) -> Result<BufReader<fs::File>, Error> {
+  let file = fs::File::open(path)?;
+  return Ok(BufReader::new(file));
+}
 
 pub fn open_folder(path: String) -> Result<Vec<PathBuf>, Error> {
   let mut entries = fs::read_dir(path)? 
