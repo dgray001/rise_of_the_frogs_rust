@@ -8,8 +8,8 @@ pub fn credits<R, W, E>(context: &mut RotfContext<R, W, E>) where
   E: Write,
 {
   context.println("Created by Daniel Gray");
-  context.println("2023 03 10");
-  context.println("v0.1d: Load game");
+  context.println("2023 03 11");
+  context.println("v0.1e: Difficulty");
 }
 
 pub fn welcome<R, W, E>(context: &mut RotfContext<R, W, E>) where

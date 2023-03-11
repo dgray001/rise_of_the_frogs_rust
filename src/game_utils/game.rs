@@ -6,6 +6,10 @@ use crate::{filesystem, commands::Command};
 use core::fmt;
 use std::{io::{Error, BufRead}, str::FromStr};
 
+mod player;
+
+
+// GameState determines available commands
 #[derive(Debug, EnumIter)]
 pub enum GameState {
   CUTSCENE,
@@ -30,21 +34,63 @@ impl FromStr for GameState {
   }
 }
 
+
+// RotfDifficulty determines a factor for the strenth of opponents
+#[derive(Debug, EnumIter)]
+pub enum RotfDifficulty {
+  PEACEFUL,
+  EASY,
+  NORMAL,
+  HARD,
+}
+
+impl RotfDifficulty {
+  pub fn default() -> RotfDifficulty {
+    return RotfDifficulty::NORMAL;
+  }
+}
+
+impl fmt::Display for RotfDifficulty {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{:?}", self)
+  }
+}
+
+impl FromStr for RotfDifficulty {
+  type Err = ();
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    for state in RotfDifficulty::iter() {
+      if state.to_string() == s {
+        return Ok(state);
+      }
+    }
+    Err(())
+  }
+}
+
+
+// RotfGame is a struct with all game information, including the environment and player
 pub struct RotfGame {
   pub name: String,
   pub state: GameState,
+  pub difficulty: RotfDifficulty,
+
+  pub player: player::RotfPlayer,
 }
 
 impl RotfGame {
-  pub fn new(name: String) -> RotfGame {
+  pub fn new(name: String, difficulty: RotfDifficulty) -> RotfGame {
     return RotfGame {
       name,
       state: GameState::CUTSCENE,
+      difficulty,
+      player: player::RotfPlayer::new(),
     }
   }
 
   pub fn load(name: String) -> Result<RotfGame, Error> {
-    let mut game = RotfGame::new(name.clone());
+    let mut game = RotfGame::new(name.clone(), RotfDifficulty::default());
     for oline in filesystem::open_file(format!("data/saves/{}/metadata.rotf", name))?.lines() {
       let line = oline?;
       if !line.clone().contains(":") {
@@ -55,6 +101,7 @@ impl RotfGame {
       match key.trim() {
         "name" => game.name = value.to_string(),
         "state" => game.state = GameState::from_str(value).unwrap_or(GameState::CUTSCENE),
+        "difficulty" => game.difficulty = RotfDifficulty::from_str(value).unwrap_or(RotfDifficulty::default()),
         _ => {},
       }
     }
@@ -71,6 +118,7 @@ impl RotfGame {
     let mut contents = String::new();
     contents += &format!("\nname: {}", self.name.clone());
     contents += &format!("\nstate: {}", self.state);
+    contents += &format!("\ndifficulty: {}", self.difficulty);
     return contents;
   }
 

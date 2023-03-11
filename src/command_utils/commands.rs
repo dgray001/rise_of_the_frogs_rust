@@ -1,6 +1,6 @@
 mod system_commands;
 mod context_state_commands;
-
+  
 use std::{collections::HashMap, io::{Write, BufRead}};
 
 use strum::IntoEnumIterator;

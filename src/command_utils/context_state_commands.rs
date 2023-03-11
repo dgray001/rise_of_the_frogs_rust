@@ -1,4 +1,4 @@
-use crate::{filesystem, context::{self, RotfContext}, game};
+use crate::{filesystem, context::{self, RotfContext}, game::{self, RotfDifficulty}};
 
 use std::{io::{Write, Error, BufRead}, path::PathBuf, ffi::OsStr};
 
@@ -59,7 +59,7 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   W: Write,
   E: Write,
 {
-  context.print("Save name: ");
+  context.print("Enter a name: ");
   let mut name;
   match context.read_line() {
     Ok(n) => name = n,
@@ -92,7 +92,15 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     context.println(&format!("To launch it use 'launch {}'.", name));
     return;
   }
-  let new_game = game::RotfGame::new(name.clone());
+  let difficulty;
+  match choose_difficulty(context) {
+    Ok(dif) => difficulty = dif,
+    Err(e) => {
+      context.print_error("reading input", &e);
+      return;
+    }
+  }
+  let new_game = game::RotfGame::new(name.clone(), difficulty);
   match new_game.save() {
     Ok(()) => {},
     Err(e) => {
@@ -102,6 +110,35 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   }
   context.curr_game = Some(new_game);
   context.context_state = context::ContextState::INGAME;
+  context.println("\nLaunching new game ...");
+}
+
+fn choose_difficulty<R, W, E>(context: &mut context::RotfContext<R, W, E>) -> Result<RotfDifficulty, Error> where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  context.println("\nChoose a difficulty where:");
+  context.println("  1: Easy");
+  context.println("  2: Normal");
+  context.println("  3: Hard");
+  loop {
+    context.print(" > ");
+    match context.read_line() {
+      Ok(input) => {
+        match input.trim() {
+          "1" => return Ok(RotfDifficulty::EASY),
+          "2" => return Ok(RotfDifficulty::NORMAL),
+          "3" => return Ok(RotfDifficulty::HARD),
+          _ => context.println("Please enter a number from 1 to 3")
+        }
+      },
+      Err(e) => {
+        context.print_error("reading input", &e);
+        return Err(e);
+      },
+    }
+  }
 }
 
 fn launch_ls<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
@@ -185,8 +222,8 @@ pub mod test_context_state_commands {
 
   #[test]
   fn test_launch_new() {
-    let (output, error) = run_cmd_input("launch new", "test_new\n");
-    assert!(output.contains("Save name:"));
+    let (output, error) = run_cmd_input("launch new", "test_new\n1\n");
+    assert!(output.contains("Enter a name:"));
     assert!(Path::new("data/saves/test_new").exists());
     assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "test_new"));
     assert_eq!(error, "");
@@ -195,7 +232,7 @@ pub mod test_context_state_commands {
 
   #[test]
   fn test_launch_new_context() {
-    let context = run_cmd_context_input("launch new", "test_new_context\n");
+    let context = run_cmd_context_input("launch new", "test_new_context\n2\n");
     assert!(Path::new("data/saves/test_new_context").exists());
     assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "test_new_context"));
     run_cmd_output("delete test_new_context"); // clean up test
@@ -206,7 +243,7 @@ pub mod test_context_state_commands {
   fn test_launch_new_exists() {
     assert!(Path::new("data/saves/test").exists());
     let (output, error) = run_cmd_input("launch new", "test\n");
-    assert!(output.contains("Save name:"));
+    assert!(output.contains("Enter a name:"));
     assert!(output.contains("That saved game already exists"));
     assert_eq!(error, "");
   }
@@ -233,7 +270,7 @@ pub mod test_context_state_commands {
 
   #[test]
   fn test_delete_game() {
-    run_cmd_input("launch new", "deletable\n");
+    run_cmd_input("launch new", "deletable\n2\n");
     assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable"));
     let (output, error) = run_cmd_output("delete deletable");
     assert!(!get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable"));
