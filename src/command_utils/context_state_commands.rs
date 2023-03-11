@@ -1,7 +1,9 @@
-use crate::{filesystem, context::{self, RotfContext}, game::{self, RotfDifficulty}};
+use crate::{filesystem, context::{self, RotfContext, ContextState}, game::{self, RotfDifficulty}};
 
 use std::{io::{Write, Error, BufRead}, path::PathBuf, ffi::OsStr};
 
+
+// Launch a saved or new game
 pub fn launch<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   R: BufRead,
   W: Write,
@@ -25,6 +27,8 @@ pub fn launch<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   launch_load(context);
 }
 
+
+// Delete a saved game
 pub fn delete<R, W, E>(context: &mut RotfContext<R, W, E>) where
   R: BufRead,
   W: Write,
@@ -40,8 +44,9 @@ pub fn delete<R, W, E>(context: &mut RotfContext<R, W, E>) where
       for entry in entries {
         let save_name = entry.file_name().unwrap_or_else(|| OsStr::new(""))
           .to_string_lossy().trim().to_lowercase();
-        if &save_name == &context.last_params {
-          filesystem::delete_folder(format!("data/saves/{}", context.last_params)).unwrap_or_else(|e| {
+        let delete_name = str::replace(&context.last_params, " ", "_");
+        if save_name == delete_name {
+          filesystem::delete_folder(format!("data/saves/{}", delete_name)).unwrap_or_else(|e| {
             context.print_error("deleting saved game", &e);
           });
           return;
@@ -54,6 +59,54 @@ pub fn delete<R, W, E>(context: &mut RotfContext<R, W, E>) where
 }
 
 
+// Display info on current player
+pub fn me<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  match &context.curr_game {
+    Some(game) => {
+      let name = game.name.clone();
+      let player = game.player.me(name);
+      context.println(&player);
+    }
+    None => {
+      context.eprintln("Can't use ME when there's no game");
+      return;
+    },
+  }
+}
+
+
+// Saves game and returns to main menu
+pub fn save<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  match &context.curr_game {
+    Some(game) => {
+      match game.save() {
+        Ok(()) => {
+          context.curr_game = None;
+          context.context_state = ContextState::HOME;
+          context.println("Saved game");
+        },
+        Err(e) => {
+          context.print_error("save game", &e);
+        },
+      }
+    }
+    None => {
+      context.eprintln("Can't use SAVE when there's no game");
+      return;
+    },
+  }
+}
+
+
+// Helper functions
 fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   R: BufRead,
   W: Write,
@@ -168,7 +221,14 @@ fn launch_load<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
         let save_name = entry.file_name().unwrap_or_else(|| OsStr::new(""))
           .to_string_lossy().trim().to_lowercase();
         if &save_name == &context.last_params {
-          context.curr_game = game::RotfGame::load(save_name).ok();
+          match game::RotfGame::load(save_name) {
+            Ok(game) => {
+              context.curr_game = Some(game);
+              context.context_state = ContextState::INGAME;
+              context.println("Launching game");
+            },
+            Err(_e) => {},
+          }
           return;
         }
       }
@@ -197,7 +257,7 @@ fn get_saved_games() -> Result<Vec<PathBuf>, Error> {
 #[cfg(test)]
 pub mod test_context_state_commands {
   use std::path::Path;
-  use crate::{test_main::*, commands::context_state_commands::*};
+  use crate::{test_main::*, commands::{context_state_commands::*, get_current_commands}, game::RotfGame, context::ContextState};
 
   #[test]
   fn test_launch() {
@@ -232,11 +292,16 @@ pub mod test_context_state_commands {
 
   #[test]
   fn test_launch_new_context() {
-    let context = run_cmd_context_input("launch new", "test_new_context\n2\n");
+    let context = run_cmd_context_input("launch new", "test new context\n3\n");
     assert!(Path::new("data/saves/test_new_context").exists());
     assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "test_new_context"));
+    let game = context.curr_game.unwrap();
+    assert_eq!(game.name, "test new context");
+    assert_eq!(game.difficulty, RotfDifficulty::HARD);
+    let saved_game = RotfGame::load("test new_context".to_string()).unwrap();
+    assert_eq!(saved_game.name, "test new context");
+    assert_eq!(saved_game.difficulty, RotfDifficulty::HARD);
     run_cmd_output("delete test_new_context"); // clean up test
-    assert_eq!(context.curr_game.unwrap().name, "test_new_context");
   }
 
   #[test]
@@ -252,6 +317,7 @@ pub mod test_context_state_commands {
   fn test_launch_game() {
     let context = run_cmd_context("launch test");
     assert_eq!(context.curr_game.unwrap().name, "test");
+    assert_eq!(context.context_state, ContextState::INGAME);
   }
 
   #[test]
@@ -270,11 +336,64 @@ pub mod test_context_state_commands {
 
   #[test]
   fn test_delete_game() {
-    run_cmd_input("launch new", "deletable\n2\n");
-    assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable"));
-    let (output, error) = run_cmd_output("delete deletable");
-    assert!(!get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable"));
+    run_cmd_input("launch new", "deletable with spaces\n2\n");
+    assert!(get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable_with_spaces"));
+    let (output, error) = run_cmd_output("delete deletable with_spaces");
+    assert!(!get_saved_games().unwrap().iter().any(|p| p.file_name().unwrap() == "deletable_with_spaces"));
     assert_eq!(output, "");
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_me_when_home() {
+    let (output, error) = run_cmd_output("me");
+    assert!(output.contains("Invalid command"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_me() {
+    let input = "".as_bytes();
+    let mut output = Vec::new();
+    let mut error = Vec::new();
+    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    context.context_state = ContextState::INGAME;
+    context.commands = get_current_commands(&context);
+    context.curr_game = Some(RotfGame::new("some game".to_owned(), RotfDifficulty::default()));
+
+    run_cmd("me", &mut context);
+
+    let output = std::str::from_utf8(&output).unwrap();
+    let error = std::str::from_utf8(&error).unwrap();
+    assert!(output.contains("Player Info"));
+    assert!(output.contains("Name: some game"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_save_when_home() {
+    let (output, error) = run_cmd_output("save");
+    assert!(output.contains("Invalid command"));
+    assert_eq!(error, "");
+  }
+
+  #[test]
+  fn test_save() {
+    let input = "".as_bytes();
+    let mut output = Vec::new();
+    let mut error = Vec::new();
+    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    context.context_state = ContextState::INGAME;
+    context.commands = get_current_commands(&context);
+    context.curr_game = Some(RotfGame::new("some game".to_owned(), RotfDifficulty::default()));
+
+    run_cmd("save", &mut context);
+
+    assert_eq!(context.context_state, ContextState::HOME);
+    assert!(context.curr_game.is_none());
+    let output = std::str::from_utf8(&output).unwrap();
+    let error = std::str::from_utf8(&error).unwrap();
+    assert!(output.contains("Saved game"));
     assert_eq!(error, "");
   }
 }

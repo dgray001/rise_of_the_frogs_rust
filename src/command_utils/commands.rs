@@ -36,14 +36,17 @@ pub enum Command {
   HELP,
   EXIT,
   CREDITS,
-  // State::HOME Commands
+  // ContextState::HOME Commands
   LAUNCH,
   DELETE,
-  // State::ENVIRONMENT Commands
+  // ContextState::INGAME Commands
+  ME,
+  SAVE,
+  // GameState::ENVIRONMENT Commands
   VIEW,
   TURN,
   MOVE,
-  // State::COMBAT Commands
+  // GameState::COMBAT Commands
   FLEE,
 }
 
@@ -59,10 +62,13 @@ impl Command {
     match context.context_state {
       ContextState::HOME => vec![Command::LAUNCH, Command::DELETE],
       ContextState::INGAME => {
-        match &context.curr_game {
+        let mut context_cmds = vec![Command::ME, Command::SAVE];
+        let mut game_cmds = match &context.curr_game {
           Some(game) => game.commands(),
           None => vec![],
-        }
+        };
+        context_cmds.append(&mut game_cmds);
+        context_cmds
       },
     }
   }
@@ -75,6 +81,8 @@ impl Command {
       Command::CREDITS => "credits",
       Command::LAUNCH => "launch",
       Command::DELETE => "delete",
+      Command::ME => "me",
+      Command::SAVE => "save",
       _ => "",
     }
   }
@@ -86,6 +94,8 @@ impl Command {
       Command::CREDITS => "Display the credits",
       Command::LAUNCH => "Launches a new or saved game",
       Command::DELETE => "Delete the specified saved game",
+      Command::ME => "Display info about the current player",
+      Command::SAVE => "Save your progress and return to the main menu",
       _ => "Not implemented",
     }
   }
@@ -121,7 +131,14 @@ impl Command {
       },
       Command::DELETE => {
         context.println("Usage: 'delete {{arg}}'");
-        context.println("Delete an existing saved game permanently.");
+        context.println("Delete an existing saved game permanently");
+      },
+      Command::ME => {
+        context.println("Displays info about the player");
+      },
+      Command::SAVE => {
+        context.println("Saves your progress and returns to the main menu");
+        context.println("You can do this to switch save games");
       },
       _ => {
         context.println("Not implemented.");
@@ -148,6 +165,8 @@ impl Command {
       Command::CREDITS => credits::credits(context),
       Command::LAUNCH => context_state_commands::launch(context),
       Command::DELETE => context_state_commands::delete(context),
+      Command::ME => context_state_commands::me(context),
+      Command::SAVE => context_state_commands::save(context),
       _ => {},
     }
   }

@@ -6,7 +6,7 @@ use std::error::Error;
 use std::fmt::Display;
 use std::io::{BufRead, Write, self};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ContextState {
   HOME,
   INGAME,

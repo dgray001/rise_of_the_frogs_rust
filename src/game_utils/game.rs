@@ -13,6 +13,7 @@ mod player;
 #[derive(Debug, EnumIter)]
 pub enum GameState {
   CUTSCENE,
+  ENVIRONMENT,
 }
 
 impl fmt::Display for GameState {
@@ -36,7 +37,7 @@ impl FromStr for GameState {
 
 
 // RotfDifficulty determines a factor for the strenth of opponents
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, PartialEq)]
 pub enum RotfDifficulty {
   PEACEFUL,
   EASY,
@@ -90,8 +91,9 @@ impl RotfGame {
   }
 
   pub fn load(name: String) -> Result<RotfGame, Error> {
-    let mut game = RotfGame::new(name.clone(), RotfDifficulty::default());
-    for oline in filesystem::open_file(format!("data/saves/{}/metadata.rotf", name))?.lines() {
+    let save_name = str::replace(name.as_str(), " ", "_");
+    let mut game = RotfGame::new(save_name.clone(), RotfDifficulty::default());
+    for oline in filesystem::open_file(format!("data/saves/{}/metadata.rotf", save_name))?.lines() {
       let line = oline?;
       if !line.clone().contains(":") {
         continue;
@@ -109,8 +111,9 @@ impl RotfGame {
   }
 
   pub fn save(&self) -> Result<(), Error> {
-    filesystem::create_folder(format!("data/saves/{}", self.name))?;
-    filesystem::create_file(format!("data/saves/{}/metadata.rotf", self.name), self.metadata_content())?;
+    let save_name = str::replace(self.name.as_str(), " ", "_");
+    filesystem::create_folder(format!("data/saves/{}", save_name))?;
+    filesystem::create_file(format!("data/saves/{}/metadata.rotf", save_name), self.metadata_content())?;
     Ok(())
   }
   
@@ -123,6 +126,9 @@ impl RotfGame {
   }
 
   pub fn commands(&self) -> Vec<Command> {
-    return vec![];
+    match self.state {
+      GameState::CUTSCENE => vec![],
+      GameState::ENVIRONMENT => self.player.environment_commands(),
+    }
   }
 }
