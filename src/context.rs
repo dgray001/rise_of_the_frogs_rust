@@ -1,5 +1,6 @@
 use crate::commands;
 use crate::game::RotfGame;
+use crate::options::{self, RotfOptions};
 
 use std::collections::HashMap;
 use std::error::Error;
@@ -25,6 +26,7 @@ pub struct RotfContext<R, W, E> where
   testing: bool,
   pub exit: bool,
 
+  pub options: options::RotfOptions,
   pub context_state: ContextState,
   pub all_commands: HashMap<String, commands::Command>,
   pub commands: HashMap<String, commands::Command>,
@@ -144,6 +146,7 @@ impl<R, W, E> RotfContext<R, W, E> where
       error,
       testing: true, // have to manually override
       exit: false,
+      options: RotfOptions::default(),
       
       context_state: ContextState::HOME,
       all_commands: commands::get_all_commands(),

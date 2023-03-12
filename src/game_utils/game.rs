@@ -95,6 +95,7 @@ impl RotfGame {
   pub fn load(name: String) -> Result<RotfGame, Error> {
     let save_name = str::replace(name.as_str(), " ", "_");
     let mut game = RotfGame::new(save_name.clone(), RotfDifficulty::default());
+    // load metadata
     for oline in filesystem::open_file(format!("data/saves/{}/metadata.rotf", save_name))?.lines() {
       let line = oline?;
       if !line.clone().contains(":") {
@@ -108,6 +109,16 @@ impl RotfGame {
         "difficulty" => game.difficulty = RotfDifficulty::from_str(value).unwrap_or(RotfDifficulty::default()),
         _ => {},
       }
+    }
+    // load player
+    for oline in filesystem::open_file(format!("data/saves/{}/player.rotf", save_name))?.lines() {
+      let line = oline?;
+      if !line.clone().contains(":") {
+        continue;
+      }
+      let (key, mut value) = line.split_once(":").unwrap();
+      value = value.trim();
+      game.player.read_line(key.trim(), value);
     }
     Ok(game)
   }

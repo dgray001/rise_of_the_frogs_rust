@@ -2,6 +2,7 @@
 #[path = "game_utils/game.rs"] mod game;
 #[path = "game_utils/cutscene.rs"] mod cutscene;
 #[path = "utils/filesystem.rs"] mod filesystem;
+#[path = "options.rs"] mod options;
 
 mod credits;
 mod context;

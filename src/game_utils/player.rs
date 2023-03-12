@@ -34,4 +34,11 @@ impl RotfPlayer {
     contents += &format!("\nlevel: {}", self.level.clone());
     return contents;
   }
+
+  pub fn read_line(&mut self, key: &str, value: &str) {
+    match key {
+      "level" => self.level = value.parse::<u8>().unwrap_or(0),
+      _ => {},
+    }
+  }
 }

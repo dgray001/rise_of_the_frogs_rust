@@ -1,6 +1,6 @@
 Thsi file outlines known bugs, planned features, and tracks progress on current development
 
-v0.1i: Replay command
+v0.1j: Options struct
 
 k: Options
 l: Option to change sleep length
