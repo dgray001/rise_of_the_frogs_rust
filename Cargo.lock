@@ -168,7 +168,7 @@ dependencies = [
 
 [[package]]
 name = "rise_of_the_frogs"
-version = "0.1.0"
+version = "0.1.12"
 dependencies = [
  "itertools",
  "rstest",

@@ -3,10 +3,14 @@ use strum_macros::EnumIter;
 
 use crate::{filesystem, commands::Command, cutscene};
 
-use core::fmt;
-use std::{io::{Error, BufRead}, str::FromStr};
+use std::fmt;
+use std::io::{Error, BufRead};
+use std::str::FromStr;
 
 mod player;
+mod environment;
+mod unit;
+mod item;
 
 
 // GameState determines available commands
@@ -79,6 +83,7 @@ pub struct RotfGame {
   pub last_cutscene: cutscene::RotfCutscene,
 
   pub player: player::RotfPlayer,
+  pub environment: environment::RotfEnvironment,
 }
 
 impl RotfGame {
@@ -89,6 +94,7 @@ impl RotfGame {
       difficulty,
       last_cutscene: cutscene::RotfCutscene::LAUNCH_GAME,
       player: player::RotfPlayer::new(),
+      environment: environment::RotfEnvironment::new(),
     }
   }
 
@@ -111,15 +117,9 @@ impl RotfGame {
       }
     }
     // load player
-    for oline in filesystem::open_file(format!("data/saves/{}/player.rotf", save_name))?.lines() {
-      let line = oline?;
-      if !line.clone().contains(":") {
-        continue;
-      }
-      let (key, mut value) = line.split_once(":").unwrap();
-      value = value.trim();
-      game.player.read_line(key.trim(), value);
-    }
+    game.player.load(save_name.clone())?;
+    // load environment
+    game.environment.load(save_name.clone())?;
     Ok(game)
   }
 
@@ -128,6 +128,7 @@ impl RotfGame {
     filesystem::create_folder(format!("data/saves/{}", save_name))?;
     filesystem::create_file(format!("data/saves/{}/metadata.rotf", save_name), self.metadata_content())?;
     filesystem::create_file(format!("data/saves/{}/player.rotf", save_name), self.player.file_content())?;
+    filesystem::create_file(format!("data/saves/{}/environment.rotf", save_name), self.environment.file_content())?;
     Ok(())
   }
   

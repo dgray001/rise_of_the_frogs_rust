@@ -1,5 +1,6 @@
-use crate::commands::Command;
+use std::io::{Error, BufRead};
 
+use crate::{commands::Command, filesystem};
 
 pub struct RotfPlayer {
   pub level: u8,
@@ -33,6 +34,19 @@ impl RotfPlayer {
     let mut contents = String::new();
     contents += &format!("\nlevel: {}", self.level.clone());
     return contents;
+  }
+
+  pub fn load(&mut self, save_name: String) -> Result<(), Error> {
+    for oline in filesystem::open_file(format!("data/saves/{}/player.rotf", save_name))?.lines() {
+      let line = oline?;
+      if !line.clone().contains(":") {
+        continue;
+      }
+      let (key, mut value) = line.split_once(":").unwrap();
+      value = value.trim();
+      self.read_line(key.trim(), value);
+    }
+    Ok(())
   }
 
   pub fn read_line(&mut self, key: &str, value: &str) {

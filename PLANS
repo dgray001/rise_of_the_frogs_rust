@@ -1,8 +1,6 @@
 Thsi file outlines known bugs, planned features, and tracks progress on current development
 
-v0.1l: Prevent bad filenames
-
-v0.2: Base Logic
+v0.2: Base Game Logic
 
  - Commands: View, Turn, Move, Eat, Attack
  - Player: Level / XP / Unit trait
