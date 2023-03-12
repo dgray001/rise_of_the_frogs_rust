@@ -9,7 +9,7 @@ pub fn credits<R, W, E>(context: &mut RotfContext<R, W, E>) where
 {
   context.println("Created by Daniel Gray");
   context.println("2023 03 11");
-  context.println("v0.1f: Me and Save");
+  context.println("v0.1: Initial Infrastructure");
 }
 
 pub fn welcome<R, W, E>(context: &mut RotfContext<R, W, E>) where

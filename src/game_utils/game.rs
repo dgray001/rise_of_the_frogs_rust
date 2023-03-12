@@ -1,7 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{filesystem, commands::Command};
+use crate::{filesystem, commands::Command, cutscene};
 
 use core::fmt;
 use std::{io::{Error, BufRead}, str::FromStr};
@@ -10,7 +10,7 @@ mod player;
 
 
 // GameState determines available commands
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, PartialEq)]
 pub enum GameState {
   CUTSCENE,
   ENVIRONMENT,
@@ -76,6 +76,7 @@ pub struct RotfGame {
   pub name: String,
   pub state: GameState,
   pub difficulty: RotfDifficulty,
+  pub last_cutscene: cutscene::RotfCutscene,
 
   pub player: player::RotfPlayer,
 }
@@ -86,6 +87,7 @@ impl RotfGame {
       name,
       state: GameState::CUTSCENE,
       difficulty,
+      last_cutscene: cutscene::RotfCutscene::LAUNCH_GAME,
       player: player::RotfPlayer::new(),
     }
   }
@@ -114,6 +116,7 @@ impl RotfGame {
     let save_name = str::replace(self.name.as_str(), " ", "_");
     filesystem::create_folder(format!("data/saves/{}", save_name))?;
     filesystem::create_file(format!("data/saves/{}/metadata.rotf", save_name), self.metadata_content())?;
+    filesystem::create_file(format!("data/saves/{}/player.rotf", save_name), self.player.file_content())?;
     Ok(())
   }
   

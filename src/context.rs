@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Display;
 use std::io::{BufRead, Write, self};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ContextState {
@@ -17,9 +19,10 @@ pub struct RotfContext<R, W, E> where
   W: Write,
   E: Write,
 {
-  input: R,
+  pub input: R,
   pub output: W,
-  error: E,
+  pub error: E,
+  testing: bool,
   pub exit: bool,
 
   pub context_state: ContextState,
@@ -53,6 +56,48 @@ impl<R, W, E> RotfContext<R, W, E> where
     });
   }
 
+  pub fn lnprint(&mut self, text: &str) {
+    self.output.write(["\n", text].concat().as_bytes()).unwrap_or_else(|e| {
+      self.print_error("Tried lnprint", &e);
+      return 0;
+    });
+    self.output.flush().unwrap_or_else(|e| {
+      self.print_error("Tried lnprint", &e);
+    });
+  }
+
+  pub fn print_sleep(&mut self, text: &str) {
+    self.print(text);
+    self.sleep_line();
+  }
+
+  pub fn println_sleep(&mut self, text: &str) {
+    self.println(text);
+    self.sleep_line();
+  }
+
+  pub fn lnprint_sleep(&mut self, text: &str) {
+    self.lnprint(text);
+    self.sleep_line();
+  }
+
+  pub fn print_letter_by_letter(&mut self, text: &str) {
+    for char in text.chars() {
+      self.print(char.to_string().as_str());
+      self.sleep_amount(6);
+    }
+    self.sleep_line();
+  }
+
+  pub fn println_letter_by_letter(&mut self, text: &str) {
+    for char in text.chars() {
+      self.print(char.to_string().as_str());
+      self.sleep_amount(6);
+    }
+    self.sleep_line();
+    self.println("");
+  }
+
   pub fn print_data<D>(&mut self, text: &str, data: D) where
     D: Display
   {
@@ -67,7 +112,7 @@ impl<R, W, E> RotfContext<R, W, E> where
   }
 
   pub fn print_error(&mut self, attempt: &str, e: &dyn Error) {
-    self.error.write(format!("Error {}: {}", attempt, e).as_bytes()).unwrap_or_default();
+    self.error.write(format!("Error {}: {}\n", attempt, e).as_bytes()).unwrap_or_default();
   }
 
   pub fn read_line(&mut self) -> Result<String, io::Error> {
@@ -78,11 +123,26 @@ impl<R, W, E> RotfContext<R, W, E> where
     }
   }
 
-  pub fn default_context(input: R, output: W, error: E) -> RotfContext<R, W, E> {
+  fn sleep_line(&self) {
+    if self.testing {
+      return;
+    }
+    thread::sleep(Duration::from_millis(2800));
+  }
+
+  fn sleep_amount(&self, amount: u64) {
+    if self.testing {
+      return;
+    }
+    thread::sleep(Duration::from_millis(amount));
+  }
+
+  pub fn default(input: R, output: W, error: E) -> RotfContext<R, W, E> {
     let mut context: RotfContext<R, W, E> = RotfContext {
       input,
       output,
       error,
+      testing: true, // have to manually override
       exit: false,
       
       context_state: ContextState::HOME,
@@ -93,7 +153,14 @@ impl<R, W, E> RotfContext<R, W, E> where
   
       curr_game: None,
     };
-    context.commands = commands::get_current_commands(&context);
+    context.commands = commands::get_current_commands(&mut context);
+    return context;
+  }
+
+  pub fn default_context(input: R, output: W, error: E, testing: bool) -> RotfContext<R, W, E> {
+    let mut context = RotfContext::default(input, output, error);
+    context.testing = testing;
+    context.commands = commands::get_current_commands(&mut context);
     return context;
   }
 }

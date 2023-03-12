@@ -1,5 +1,6 @@
 #[path = "command_utils/commands.rs"] mod commands;
 #[path = "game_utils/game.rs"] mod game;
+#[path = "game_utils/cutscene.rs"] mod cutscene;
 #[path = "utils/filesystem.rs"] mod filesystem;
 
 mod credits;
@@ -10,15 +11,15 @@ use context::RotfContext;
 use std::io::{self, BufRead, Write};
 
 fn main() {
-  main_loop(io::stdin().lock(), io::stdout(), io::stderr());
+  main_loop(io::stdin().lock(), io::stdout(), io::stderr(), false);
 }
 
-fn main_loop<R, W, E>(input: R, output: W, error: E) where
+fn main_loop<R, W, E>(input: R, output: W, error: E, testing: bool) where
   R: BufRead,
   W: Write,
   E: Write,
 {
-  let mut context = RotfContext::default_context(input, output, error);
+  let mut context = RotfContext::default_context(input, output, error, testing);
 
   credits::welcome(&mut context);
 
@@ -55,7 +56,7 @@ pub mod test_main {
     let input_stream = binding.as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    main_loop(&input_stream[..], &mut output, &mut error);
+    main_loop(&input_stream[..], &mut output, &mut error, false);
     let binding = output.clone();
     let output_str = str::from_utf8(&binding).unwrap();
     let binding = error.clone();
@@ -67,7 +68,7 @@ pub mod test_main {
     let input = "".as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
     parse_command(cmd, &mut context);
     let binding = output.clone();
     let output_str = str::from_utf8(&binding).unwrap();
@@ -80,7 +81,7 @@ pub mod test_main {
     let input = extra_input.as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
     parse_command(cmd, &mut context);
     let binding = output.clone();
     let output_str = str::from_utf8(&binding).unwrap();
@@ -93,7 +94,7 @@ pub mod test_main {
     let input = "".as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
     parse_command(cmd, &mut context);
     return TestContext::new(context);
   }
@@ -102,7 +103,7 @@ pub mod test_main {
     let input = extra_input.as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
     parse_command(cmd, &mut context);
     return TestContext::new(context);
   }

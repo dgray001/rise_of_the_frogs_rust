@@ -28,4 +28,10 @@ impl RotfPlayer {
     str += &format!("\n   Tier: {}", self.tier());
     return str;
   }
+
+  pub fn file_content(&self) -> String {
+    let mut contents = String::new();
+    contents += &format!("\nlevel: {}", self.level.clone());
+    return contents;
+  }
 }

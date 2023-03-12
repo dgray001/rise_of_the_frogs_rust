@@ -356,18 +356,19 @@ pub mod test_context_state_commands {
     let input = "".as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
     context.context_state = ContextState::INGAME;
-    context.commands = get_current_commands(&context);
-    context.curr_game = Some(RotfGame::new("some game".to_owned(), RotfDifficulty::default()));
+    context.commands = get_current_commands(&mut context);
+    context.curr_game = Some(RotfGame::new("test me".to_owned(), RotfDifficulty::default()));
 
     run_cmd("me", &mut context);
 
     let output = std::str::from_utf8(&output).unwrap();
     let error = std::str::from_utf8(&error).unwrap();
     assert!(output.contains("Player Info"));
-    assert!(output.contains("Name: some game"));
+    assert!(output.contains("Name: test me"));
     assert_eq!(error, "");
+    run_cmd_output("delete test me"); // clean up test
   }
 
   #[test]
@@ -382,10 +383,10 @@ pub mod test_context_state_commands {
     let input = "".as_bytes();
     let mut output = Vec::new();
     let mut error = Vec::new();
-    let mut context = RotfContext::default_context(&input[..], &mut output, &mut error);
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
     context.context_state = ContextState::INGAME;
-    context.commands = get_current_commands(&context);
-    context.curr_game = Some(RotfGame::new("some game".to_owned(), RotfDifficulty::default()));
+    context.commands = get_current_commands(&mut context);
+    context.curr_game = Some(RotfGame::new("test save".to_owned(), RotfDifficulty::default()));
 
     run_cmd("save", &mut context);
 
@@ -395,5 +396,6 @@ pub mod test_context_state_commands {
     let error = std::str::from_utf8(&error).unwrap();
     assert!(output.contains("Saved game"));
     assert_eq!(error, "");
+    run_cmd_output("delete test save"); // clean up test
   }
 }

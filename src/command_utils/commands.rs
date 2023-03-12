@@ -6,13 +6,14 @@ use std::{collections::HashMap, io::{Write, BufRead}};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{context::{RotfContext, ContextState}, credits};
+use crate::{context::{RotfContext, ContextState}, credits, cutscene::RotfCutscene};
 
-pub fn parse_command<R, W, E>(cmd: &str, context: &mut RotfContext<R, W, E>)  where
+pub fn parse_command<R, W, E>(cmd: &str, context: &mut RotfContext<R, W, E>) where
   R: BufRead,
   W: Write,
   E: Write,
 {
+  // Prepare command
   if cmd.trim().is_empty() {
     return;
   }
@@ -22,10 +23,22 @@ pub fn parse_command<R, W, E>(cmd: &str, context: &mut RotfContext<R, W, E>)  wh
   context.last_cmd = last_cmd.clone();
   context.last_params = cmd_split.1.trim().to_lowercase();
   let commands = context.commands.clone();
+  // Run command
   match commands.get(&last_cmd) {
     Some(cmd) => cmd.call(context),
     None => context.eprintln("Invalid command"),
   }
+  // Play cutscene if relevant
+  RotfCutscene::resolve_context(context);
+  // Save game
+  match &context.curr_game {
+    Some(game) => match game.save() {
+      Ok(()) => {},
+      Err(e) => context.print_error("saving game", &e),
+    },
+    None => {},
+  }
+  // Get current commands
   context.commands = get_current_commands(context);
 }
 
@@ -54,7 +67,7 @@ impl Command {
   fn system_commands() -> Vec<Command> {
     return vec![Command::LS, Command::HELP, Command::EXIT, Command::CREDITS];
   }
-  fn context_state_commands<R, W, E>(context: &RotfContext<R, W, E>) -> Vec<Command> where
+  fn context_state_commands<R, W, E>(context: &mut RotfContext<R, W, E>) -> Vec<Command> where
     R: BufRead,
     W: Write,
     E: Write,
@@ -64,7 +77,9 @@ impl Command {
       ContextState::INGAME => {
         let mut context_cmds = vec![Command::ME, Command::SAVE];
         let mut game_cmds = match &context.curr_game {
-          Some(game) => game.commands(),
+          Some(game) => {
+            return game.commands();
+          }
           None => vec![],
         };
         context_cmds.append(&mut game_cmds);
@@ -138,7 +153,7 @@ impl Command {
       },
       Command::SAVE => {
         context.println("Saves your progress and returns to the main menu");
-        context.println("You can do this to switch save games");
+        context.println("Since the game saves itself as you play, this command is more so you can switch save games");
       },
       _ => {
         context.println("Not implemented.");
@@ -180,7 +195,7 @@ pub fn get_all_commands() -> HashMap<String, Command> {
   return cmds;
 }
 
-pub fn get_current_commands<R, W, E>(context: &RotfContext<R, W, E>) -> HashMap<String, Command> where
+pub fn get_current_commands<R, W, E>(context: &mut RotfContext<R, W, E>) -> HashMap<String, Command> where
   R: BufRead,
   W: Write,
   E: Write,

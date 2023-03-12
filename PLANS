@@ -1,0 +1,24 @@
+Thsi file outlines known bugs, planned features, and tracks progress on current development
+
+v0.1h: Save every command
+
+h: Cutscene tests
+i: Replay output/error
+j: Replay cutscene
+k: Options
+l: Option to change sleep length
+- Prevent filenames of certain types
+
+v0.2: Base Logic
+
+ - Commands: View, Turn, Move, Eat, Attack
+ - Player: Level / XP / Unit trait
+ - Unit: Health / Defense / Abilities
+ - Abilities: 
+ - Combat:
+
+v0.3: Base Game Logic
+
+v0.4: Chapter I
+
+v0.5: Chapter II
