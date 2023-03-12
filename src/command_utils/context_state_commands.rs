@@ -126,6 +126,30 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     context.println("Can't enter empty name");
     return;
   }
+  let invalid_characters = "-<>:\"\\/|?*^";
+  for char in invalid_characters.chars() {
+    if name.contains(char) {
+      context.println(format!("Cannot use the following characters: {}", invalid_characters).as_str());
+      return;
+    }
+  }
+  let invalid_names = vec!["com1", "com2", "com3", "com4", "com5", "com6",
+    "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7",
+    "lpt8", "lpt9", "con", "nul", "prn"];
+  for invalid_name in invalid_names {
+    if name == invalid_name {
+      context.println(format!("Cannot use the following name: {}", invalid_name).as_str());
+      return;
+    }
+  }
+  if name.len() > 30 {
+    context.println("Cannot enter a name of more than 30 characters");
+    return;
+  }
+  if name.starts_with(".") || name.ends_with(".") {
+    context.println("Cannot start or end name with a '.'");
+    return;
+  }
   let mut current_games = Vec::new();
   match filesystem::open_folder_or_create("data/saves".to_string()) {
     Ok(games) => {

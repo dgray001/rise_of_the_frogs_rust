@@ -1,8 +1,6 @@
 Thsi file outlines known bugs, planned features, and tracks progress on current development
 
-v0.1k: Options menu
-
-- Prevent filenames of certain types
+v0.1l: Prevent bad filenames
 
 v0.2: Base Logic
 
@@ -17,3 +15,6 @@ v0.3: Base Game Logic
 v0.4: Chapter I
 
 v0.5: Chapter II
+
+
+// 73939133 is the largest right-truncatable prime number and the code for the dimension 4 easter egg
