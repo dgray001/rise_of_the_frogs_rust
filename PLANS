@@ -1,10 +1,7 @@
 Thsi file outlines known bugs, planned features, and tracks progress on current development
 
-v0.1h: Save every command
+v0.1i: Replay command
 
-h: Cutscene tests
-i: Replay output/error
-j: Replay cutscene
 k: Options
 l: Option to change sleep length
 - Prevent filenames of certain types

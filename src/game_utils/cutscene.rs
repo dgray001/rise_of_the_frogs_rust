@@ -3,7 +3,7 @@ use std::{io::{BufRead, Write, Error}, fmt, str::FromStr};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{context::RotfContext, game::GameState, filesystem};
+use crate::{context::{RotfContext, ContextState}, game::GameState, filesystem};
 
 
 // CutsceneMode determines how cutscene is played
@@ -61,6 +61,9 @@ impl RotfCutscene {
     W: Write,
     E: Write,
   {
+    if context.context_state != ContextState::INGAME {
+      return;
+    }
     let mut cutscene = RotfCutscene::LAUNCH_GAME;
     let mut play_cutscene = false;
     match context.curr_game.as_mut() {
@@ -83,7 +86,7 @@ impl RotfCutscene {
     }
   }
 
-  fn play<R, W, E>(&self, context: &mut RotfContext<R, W, E>) -> Result<(), Error> where
+  pub fn play<R, W, E>(&self, context: &mut RotfContext<R, W, E>) -> Result<(), Error> where
     R: BufRead,
     W: Write,
     E: Write,

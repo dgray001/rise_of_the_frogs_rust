@@ -394,8 +394,8 @@ pub mod test_context_state_commands {
     assert!(context.curr_game.is_none());
     let output = std::str::from_utf8(&output).unwrap();
     let error = std::str::from_utf8(&error).unwrap();
+    run_cmd_output("delete test save"); // clean up test
     assert!(output.contains("Saved game"));
     assert_eq!(error, "");
-    run_cmd_output("delete test save"); // clean up test
   }
 }

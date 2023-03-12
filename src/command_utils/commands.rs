@@ -49,6 +49,7 @@ pub enum Command {
   HELP,
   EXIT,
   CREDITS,
+  REPLAY,
   // ContextState::HOME Commands
   LAUNCH,
   DELETE,
@@ -65,7 +66,7 @@ pub enum Command {
 
 impl Command {
   fn system_commands() -> Vec<Command> {
-    return vec![Command::LS, Command::HELP, Command::EXIT, Command::CREDITS];
+    return vec![Command::LS, Command::HELP, Command::EXIT, Command::CREDITS, Command::REPLAY];
   }
   fn context_state_commands<R, W, E>(context: &mut RotfContext<R, W, E>) -> Vec<Command> where
     R: BufRead,
@@ -94,6 +95,7 @@ impl Command {
       Command::HELP => "help",
       Command::EXIT => "exit",
       Command::CREDITS => "credits",
+      Command::REPLAY => "replay",
       Command::LAUNCH => "launch",
       Command::DELETE => "delete",
       Command::ME => "me",
@@ -107,6 +109,7 @@ impl Command {
       Command::HELP => "Display helptext about the specified",
       Command::EXIT => "Exit the program",
       Command::CREDITS => "Display the credits",
+      Command::REPLAY => "Replay last cutscene",
       Command::LAUNCH => "Launches a new or saved game",
       Command::DELETE => "Delete the specified saved game",
       Command::ME => "Display info about the current player",
@@ -137,6 +140,10 @@ impl Command {
       },
       Command::CREDITS => {
         context.println("Display credits for the game");
+      },
+      Command::REPLAY => {
+        context.println("Usage: 'replay {{arg}}'");
+        context.println("Replay last cutscene with 'replay cutscene'");
       },
       Command::LAUNCH => {
         context.println("Usage: 'launch {{arg}}'");
@@ -178,6 +185,7 @@ impl Command {
       Command::HELP => system_commands::help(context),
       Command::EXIT => context.exit = true,
       Command::CREDITS => credits::credits(context),
+      Command::REPLAY => system_commands::replay(context),
       Command::LAUNCH => context_state_commands::launch(context),
       Command::DELETE => context_state_commands::delete(context),
       Command::ME => context_state_commands::me(context),

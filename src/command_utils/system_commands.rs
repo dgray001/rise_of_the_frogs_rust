@@ -2,6 +2,7 @@ use std::io::{Write, BufRead};
 
 use crate::context::RotfContext;
 use crate::commands::Command;
+use crate::cutscene::RotfCutscene;
 
 pub fn ls<R, W, E>(context: &mut RotfContext<R, W, E>) where
   R: BufRead,
@@ -53,10 +54,45 @@ pub fn help<R, W, E>(context: &mut RotfContext<R, W, E>) where
   }
 }
 
+pub fn replay<R, W, E>(context: &mut RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  match context.last_params.trim() {
+    "cutscene" => {
+      let mut cutscene = RotfCutscene::LAUNCH_GAME;
+      let mut play_cutscene = false;
+      match &context.curr_game {
+        Some(game) => {
+          play_cutscene = true;
+          cutscene = game.last_cutscene.clone();
+        },
+        None => {},
+      }
+      if play_cutscene {
+        match cutscene.play(context) {
+          Ok(_) => {},
+          Err(e) => {
+            context.print_error("playing cutscene", &e);
+          }
+        };
+      }
+    }
+    _ => {
+      context.println("Unrecognized replay parameter");
+      context.println("Use 'replay cutscene' to play the last cutscene");
+    },
+  }
+}
+
 
 #[cfg(test)]
 pub mod test_system_commands {
-  use crate::test_main::{run_cmd_output, run_cmd_context};
+  use rstest::*;
+  use crate::test_main::*;
+  use crate::context::RotfContext;
+  use crate::game::{RotfGame, RotfDifficulty};
 
   #[test]
   fn test_ls() {
@@ -106,6 +142,27 @@ pub mod test_system_commands {
   fn test_credits() {
     let (output, error) = run_cmd_output("credits");
     assert!(output.contains("Created by Daniel Gray"));
+    assert_eq!(error, "");
+  }
+
+  #[rstest]
+  #[case::replay("replay", "Unrecognized replay parameter")]
+  #[case::unknown("replay unknown", "Unrecognized replay parameter")]
+  #[case::cutscene("replay cutscene", "+++++ Chapter 1: A Legend is Laid +++++")]
+  fn test_replay(#[case] cmd: &str, #[case] expected: &str) {
+    let input = "".as_bytes();
+    let mut output = Vec::new();
+    let mut error = Vec::new();
+    let mut context = RotfContext::default(&input[..], &mut output, &mut error);
+    let game = RotfGame::new(format!("test replay {}", cmd), RotfDifficulty::default());
+    context.curr_game = Some(game);
+
+    run_cmd(cmd, &mut context);
+
+    let output = std::str::from_utf8(&output).unwrap();
+    let error = std::str::from_utf8(&error).unwrap();
+    run_cmd_output(format!("delete test replay {}", cmd).as_str()); // clean up test
+    assert!(output.contains(expected));
     assert_eq!(error, "");
   }
 }
