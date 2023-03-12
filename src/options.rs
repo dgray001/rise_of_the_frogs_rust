@@ -3,7 +3,7 @@ use crate::filesystem;
 use std::{io::BufRead, path::Path};
 
 pub struct RotfOptions {
-  sleep_factor: f64,
+  pub sleep_factor: f64,
 }
 
 impl RotfOptions {
@@ -28,13 +28,17 @@ impl RotfOptions {
       },
       Err(_e) => {
         if !Path::new("data/saves/options.rotf").exists() {
-          match filesystem::create_file("data/saves/options.rotf".to_string(), options.file_content()) {
-            _ => {},
-          }
+          options.save();
         }
       },
     }
     return options;
+  }
+
+  pub fn save(&self) {
+    match filesystem::create_file("data/saves/options.rotf".to_string(), self.file_content()) {
+      _ => {},
+    }
   }
 
   pub fn file_content(&self) -> String {

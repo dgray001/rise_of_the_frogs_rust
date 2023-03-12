@@ -1,9 +1,7 @@
 Thsi file outlines known bugs, planned features, and tracks progress on current development
 
-v0.1j: Options struct
+v0.1k: Options menu
 
-k: Options
-l: Option to change sleep length
 - Prevent filenames of certain types
 
 v0.2: Base Logic

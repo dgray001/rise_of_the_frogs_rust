@@ -50,6 +50,7 @@ pub enum Command {
   EXIT,
   CREDITS,
   REPLAY,
+  OPTIONS,
   // ContextState::HOME Commands
   LAUNCH,
   DELETE,
@@ -66,7 +67,7 @@ pub enum Command {
 
 impl Command {
   fn system_commands() -> Vec<Command> {
-    return vec![Command::LS, Command::HELP, Command::EXIT, Command::CREDITS, Command::REPLAY];
+    return vec![Command::LS, Command::HELP, Command::EXIT, Command::CREDITS, Command::REPLAY, Command::OPTIONS];
   }
   fn context_state_commands<R, W, E>(context: &mut RotfContext<R, W, E>) -> Vec<Command> where
     R: BufRead,
@@ -91,29 +92,39 @@ impl Command {
 
   const fn name(&self) -> &'static str {
     match *self {
+      // System Commands
       Command::LS => "ls",
       Command::HELP => "help",
       Command::EXIT => "exit",
       Command::CREDITS => "credits",
       Command::REPLAY => "replay",
+      Command::OPTIONS => "options",
+      // ContextState::HOME Commands
       Command::LAUNCH => "launch",
       Command::DELETE => "delete",
+      // ContextState::INGAME Commands
       Command::ME => "me",
       Command::SAVE => "save",
+      // GameState::COMBAT Commands
       _ => "",
     }
   }
   const fn description(&self) -> &'static str {
     match *self {
+      // System Commands
       Command::LS => "List available commands",
       Command::HELP => "Display helptext about the specified",
       Command::EXIT => "Exit the program",
       Command::CREDITS => "Display the credits",
       Command::REPLAY => "Replay last cutscene",
+      Command::OPTIONS => "Opens the options menu",
+      // ContextState::HOME Commands
       Command::LAUNCH => "Launches a new or saved game",
       Command::DELETE => "Delete the specified saved game",
+      // ContextState::INGAME Commands
       Command::ME => "Display info about the current player",
       Command::SAVE => "Save your progress and return to the main menu",
+      // GameState::COMBAT Commands
       _ => "Not implemented",
     }
   }
@@ -127,6 +138,7 @@ impl Command {
       context.print_data("Aliases: {}", self.aliases().join(", "));
     }
     match *self {
+      // System Commands
       Command::LS => {
         context.println("Lists all available commands and a short description of how they work");
       },
@@ -145,6 +157,11 @@ impl Command {
         context.println("Usage: 'replay {{arg}}'");
         context.println("Replay last cutscene with 'replay cutscene'");
       },
+      Command::OPTIONS => {
+        context.println("Opens the options menu, where options can be saved");
+        context.println("Options will be persistent across saves");
+      },
+      // ContextState::HOME Commands
       Command::LAUNCH => {
         context.println("Usage: 'launch {{arg}}'");
         context.println("Launch a new game with 'launch new'");
@@ -155,6 +172,7 @@ impl Command {
         context.println("Usage: 'delete {{arg}}'");
         context.println("Delete an existing saved game permanently");
       },
+      // ContextState::INGAME Commands
       Command::ME => {
         context.println("Displays info about the player");
       },
@@ -162,6 +180,7 @@ impl Command {
         context.println("Saves your progress and returns to the main menu");
         context.println("Since the game saves itself as you play, this command is more so you can switch save games");
       },
+      // GameState::COMBAT Commands
       _ => {
         context.println("Not implemented.");
       },
@@ -181,15 +200,20 @@ impl Command {
     E: Write,
   {
     match *self {
+      // System Commands
       Command::LS => system_commands::ls(context),
       Command::HELP => system_commands::help(context),
       Command::EXIT => context.exit = true,
       Command::CREDITS => credits::credits(context),
       Command::REPLAY => system_commands::replay(context),
+      Command::OPTIONS => system_commands::options(context),
+      // ContextState::HOME Commands
       Command::LAUNCH => context_state_commands::launch(context),
       Command::DELETE => context_state_commands::delete(context),
+      // ContextState::INGAME Commands
       Command::ME => context_state_commands::me(context),
       Command::SAVE => context_state_commands::save(context),
+      // GameState::COMBAT Commands
       _ => {},
     }
   }

@@ -86,6 +86,51 @@ pub fn replay<R, W, E>(context: &mut RotfContext<R, W, E>) where
   }
 }
 
+pub fn options<R, W, E>(context: &mut RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  context.println("  -- Options Menu --");
+  context.println("To modify an option, enter its associated number; to leave, enter '0'");
+  loop {
+    context.println("");
+    context.println(format!("1: sleep_factor, value: {}", context.options.sleep_factor).as_str());
+    context.println("");
+    context.print(" choose an option > ");
+    match context.read_line() {
+      Ok(input) => {
+        match input.trim() {
+          "0" => return,
+          "1" => {
+            context.println("sleep factor");
+            context.println(format!("  current value: {}", context.options.sleep_factor).as_str());
+            context.println("  accepted values: 0-2");
+            context.println("");
+            context.print(" enter new value > ");
+            match context.read_line() {
+              Ok(v) => {
+                let new_val = v.trim().parse::<f64>().unwrap_or(-1.0);
+                if new_val < 0.0 || new_val > 2.0 {
+                  context.println("Not an accepted value for sleep factor");
+                }
+                else {
+                  context.options.sleep_factor = new_val;
+                  context.options.save();
+                  context.println(format!("Changed sleep factor to {}", new_val).as_str());
+                }
+              }
+              Err(e) => context.print_error("reading input", &e),
+            }
+          }
+          _ => context.println("Invalid input. If you wish to leave the option menu, enter '0'"),
+        }
+      },
+      Err(e) => context.print_error("reading input", &e),
+    }
+  }
+}
+
 
 #[cfg(test)]
 pub mod test_system_commands {

@@ -86,7 +86,7 @@ impl<R, W, E> RotfContext<R, W, E> where
   pub fn print_letter_by_letter(&mut self, text: &str) {
     for char in text.chars() {
       self.print(char.to_string().as_str());
-      self.sleep_amount(6);
+      self.sleep_char();
     }
     self.sleep_line();
   }
@@ -94,7 +94,7 @@ impl<R, W, E> RotfContext<R, W, E> where
   pub fn println_letter_by_letter(&mut self, text: &str) {
     for char in text.chars() {
       self.print(char.to_string().as_str());
-      self.sleep_amount(6);
+      self.sleep_char();
     }
     self.sleep_line();
     self.println("");
@@ -126,10 +126,11 @@ impl<R, W, E> RotfContext<R, W, E> where
   }
 
   fn sleep_line(&self) {
-    if self.testing {
-      return;
-    }
-    thread::sleep(Duration::from_millis(2800));
+    self.sleep_amount((3000.0 * self.options.sleep_factor).round() as u64);
+  }
+
+  fn sleep_char(&self) {
+    self.sleep_amount((6.0 * self.options.sleep_factor).round() as u64);
   }
 
   fn sleep_amount(&self, amount: u64) {
