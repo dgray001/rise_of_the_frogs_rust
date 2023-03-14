@@ -17,6 +17,7 @@ pub fn command<R, W, E>(context: &mut context::RotfContext<R, W, E>, cmd: &str) 
           "view" => view(context),
           "fight" => fight(context),
           "pickup" => pickup(context),
+          "inventory" => inventory(context),
           _ => context.eprintln(format!("Environment command {} not implemented", cmd).as_str()),
         }
       }
@@ -99,29 +100,59 @@ fn pickup<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   W: Write,
   E: Write,
 {
-  let index = context.last_params.parse::<i64>().unwrap_or(-1);
-  if index < 1 {
-    context.println("Invalid index. Must be a positive integer.");
+  let game = context.curr_game.as_mut().unwrap();
+  if !game.player.inventory.can_pickup() {
+    context.println("Your inventory is out of space");
     return;
   }
-  let game = context.curr_game.as_mut().unwrap();
-  let mut pickup_item = None;
-  for item in game.environment.items.iter() {
+  let index = context.last_params.parse::<i64>().unwrap_or(-1);
+  if index < 1 {
+    context.println("Invalid index. Must be a positive integer");
+    return;
+  }
+  let mut pickup_index = None;
+  for (i, item) in game.environment.items.iter().enumerate() {
     if item.view_index != index {
       continue;
     }
-    pickup_item = Some(item);
+    pickup_index = Some(i);
   }
-  match pickup_item {
-    Some(item) => {
-      if !game.player.can_view(item) {
+  match pickup_index {
+    Some(i) => {
+      let item = game.environment.items.remove(i);
+      if !game.player.can_view(&item) {
         context.println("Item no longer in view. Use 'view' to update view");
         return;
       }
-      context.println("FIGHT");
+      let item_string = item.to_string();
+      match game.player.inventory.add(item) {
+        Some(it) => {
+          game.environment.items.push(it);
+          context.println("Inventory full");
+        },
+        None => {
+          context.println(&format!("Picked up {}", item_string));
+        },
+      }
     },
     None => {
       context.println("Item not found")
     },
   }
+}
+
+fn inventory<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  let game = context.curr_game.as_mut().unwrap();
+  let mut display_string = "  -- Inventory --\n".to_owned();
+  display_string += &format!("Capacity: {}\n", game.player.inventory.capacity);
+  display_string += "Items:\n";
+  // eventually pass param as filter to filter list
+  for item in game.player.inventory.list() {
+    display_string += &format!("  {}\n", item.to_string());
+  }
+  context.println(display_string.as_str());
 }

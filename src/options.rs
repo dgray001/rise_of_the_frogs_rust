@@ -11,10 +11,10 @@ impl RotfOptions {
     let mut options = RotfOptions {
       sleep_factor: 1.0,
     };
-    match filesystem::open_file("data/saves/options.rotf".to_string()) {
+    match filesystem::open_file("data/saves/options.rotf".to_owned()) {
       Ok(f) => {
         for oline in f.lines() {
-          let line = oline.unwrap_or("".to_string());
+          let line = oline.unwrap_or("".to_owned());
           if !line.clone().contains(":") {
             continue;
           }
@@ -36,7 +36,7 @@ impl RotfOptions {
   }
 
   pub fn save(&self) {
-    match filesystem::create_file("data/saves/options.rotf".to_string(), self.file_content()) {
+    match filesystem::create_file("data/saves/options.rotf".to_owned(), self.file_content()) {
       _ => {},
     }
   }

@@ -123,8 +123,8 @@ impl RotfEnvironment {
         continue;
       }
       // environment data
-      let (key, mut value) = line.split_once(":").unwrap();
-      value = value.trim();
+      let (key, mut _value) = line.split_once(":").unwrap();
+      _value = _value.trim();
       match key.trim() {
         _ => {},
       }

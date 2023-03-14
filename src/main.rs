@@ -62,7 +62,7 @@ pub mod test_main {
     let output_str = str::from_utf8(&binding).unwrap();
     let binding = error.clone();
     let error_str = str::from_utf8(&binding).unwrap();
-    return (output_str.to_string(), error_str.to_string());
+    return (output_str.to_owned(), error_str.to_owned());
   }
 
   pub fn run_cmd_output(cmd: &str) -> (String, String) {
@@ -75,7 +75,7 @@ pub mod test_main {
     let output_str = str::from_utf8(&binding).unwrap();
     let binding = error.clone();
     let error_str = str::from_utf8(&binding).unwrap();
-    return (output_str.to_string(), error_str.to_string());
+    return (output_str.to_owned(), error_str.to_owned());
   }
 
   pub fn run_cmd_input(cmd: &str, extra_input: &str) -> (String, String) {
@@ -88,7 +88,7 @@ pub mod test_main {
     let output_str = str::from_utf8(&binding).unwrap();
     let binding = error.clone();
     let error_str = str::from_utf8(&binding).unwrap();
-    return (output_str.to_string(), error_str.to_string());
+    return (output_str.to_owned(), error_str.to_owned());
   }
 
   pub fn run_cmd_context(cmd: &str) -> TestContext {

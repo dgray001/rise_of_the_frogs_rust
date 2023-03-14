@@ -3,10 +3,12 @@ use std::{io::{Error, BufRead}, str::FromStr};
 use crate::{commands::Command, filesystem};
 
 use super::environment::{Positionable, Position};
+use super::inventory::Inventory;
 
 pub struct RotfPlayer {
   pub level: u8,
   pub view_distance: Position,
+  pub inventory: Inventory,
 }
 
 impl RotfPlayer {
@@ -14,11 +16,12 @@ impl RotfPlayer {
     return RotfPlayer {
       level: 0,
       view_distance: Position::NEAR,
+      inventory: Inventory::new(),
     }
   }
 
   pub fn environment_commands(&self) -> Vec<Command> {
-    return vec![Command::VIEW, Command::FIGHT, Command::PICKUP];
+    return vec![Command::VIEW, Command::FIGHT, Command::PICKUP, Command::INVENTORY];
   }
 
   pub fn can_view(&self, thing: &dyn Positionable) -> bool {

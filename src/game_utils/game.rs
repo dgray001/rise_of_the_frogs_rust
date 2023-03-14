@@ -11,6 +11,7 @@ mod player;
 pub mod environment;
 mod unit;
 mod item;
+mod inventory;
 
 
 // GameState determines available commands
@@ -110,7 +111,7 @@ impl RotfGame {
       let (key, mut value) = line.split_once(":").unwrap();
       value = value.trim();
       match key.trim() {
-        "name" => game.name = value.to_string(),
+        "name" => game.name = value.to_owned(),
         "state" => game.state = GameState::from_str(value).unwrap_or(GameState::CUTSCENE),
         "difficulty" => game.difficulty = RotfDifficulty::from_str(value).unwrap_or(RotfDifficulty::default()),
         _ => {},

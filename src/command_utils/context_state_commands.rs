@@ -151,7 +151,7 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     return;
   }
   let mut current_games = Vec::new();
-  match filesystem::open_folder_or_create("data/saves".to_string()) {
+  match filesystem::open_folder_or_create("data/saves".to_owned()) {
     Ok(games) => {
       for game in games.iter() {
         current_games.push(game.file_name().unwrap_or_else(|| OsStr::new(""))
@@ -267,7 +267,7 @@ fn launch_load<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
 
 fn get_saved_games() -> Result<Vec<PathBuf>, Error> {
   let mut saved_games = Vec::new();
-  match filesystem::open_folder_or_create("data/saves".to_string()) {
+  match filesystem::open_folder_or_create("data/saves".to_owned()) {
     Ok(entries) => {
       for entry in entries {
         if entry.is_dir() {
@@ -325,7 +325,7 @@ pub mod test_context_state_commands {
     let game = context.curr_game.unwrap();
     assert_eq!(game.name, "test new context");
     assert_eq!(game.difficulty, RotfDifficulty::HARD);
-    let saved_game = RotfGame::load("test new_context".to_string()).unwrap();
+    let saved_game = RotfGame::load("test new_context".to_owned()).unwrap();
     assert_eq!(saved_game.name, "test new context");
     assert_eq!(saved_game.difficulty, RotfDifficulty::HARD);
     run_cmd_output("delete test_new_context"); // clean up test

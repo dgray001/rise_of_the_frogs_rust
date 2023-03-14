@@ -152,8 +152,8 @@ impl<R, W, E> RotfContext<R, W, E> where
       context_state: ContextState::HOME,
       all_commands: commands::get_all_commands(),
       commands: HashMap::new(),
-      last_cmd: "".to_string(),
-      last_params: "".to_string(),
+      last_cmd: "".to_owned(),
+      last_params: "".to_owned(),
   
       curr_game: None,
     };

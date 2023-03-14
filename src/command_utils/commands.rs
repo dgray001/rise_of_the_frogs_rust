@@ -64,6 +64,7 @@ pub enum Command {
   MOVE,
   FIGHT,
   PICKUP,
+  INVENTORY,
   // GameState::COMBAT Commands
   FLEE,
 }
@@ -110,6 +111,7 @@ impl Command {
       Command::VIEW => "view",
       Command::FIGHT => "fight",
       Command::PICKUP => "pickup",
+      Command::INVENTORY => "inventory",
       // GameState::COMBAT Commands
       _ => "",
     }
@@ -133,6 +135,7 @@ impl Command {
       Command::VIEW => "View your surroundings",
       Command::FIGHT => "Fight the specified unit in your view",
       Command::PICKUP => "Pickup the specified item in your view",
+      Command::INVENTORY => "View your inventory",
       // GameState::COMBAT Commands
       _ => "Not implemented",
     }
@@ -205,6 +208,9 @@ impl Command {
         context.println("Arg is the index of the viewable item to pickup");
         context.println("To see the viewable index of items you can pickup, use 'view'");
       },
+      Command::INVENTORY => {
+        context.println("View the contents of your inventory");
+      },
       // GameState::COMBAT Commands
       _ => {
         context.println("Not implemented.");
@@ -219,6 +225,7 @@ impl Command {
       Command::VIEW => vec!["vw"],
       Command::FIGHT => vec!["fi"],
       Command::PICKUP => vec!["pi"],
+      Command::INVENTORY => vec!["inv"],
       _ => vec![],
     }
   }
@@ -242,9 +249,9 @@ impl Command {
       Command::ME => context_state_commands::me(context),
       Command::SAVE => context_state_commands::save(context),
       // GameState::ENVIRONMENT Commands
-      Command::VIEW => environment_commands::command(context, "view"),
-      Command::FIGHT => environment_commands::command(context, "fight"),
-      Command::PICKUP => environment_commands::command(context, "pickup"),
+      Command::VIEW | Command::FIGHT | Command::PICKUP | Command::INVENTORY => {
+        environment_commands::command(context, self.name());
+      },
       // GameState::COMBAT Commands
       _ => {},
     }
@@ -254,7 +261,7 @@ impl Command {
 pub fn get_all_commands() -> HashMap<String, Command> {
   let mut cmds = HashMap::new();
   for cmd in Command::iter() {
-    cmds.insert(cmd.name().to_string(), cmd.clone());
+    cmds.insert(cmd.name().to_owned(), cmd.clone());
   }
   return cmds;
 }
@@ -269,9 +276,9 @@ pub fn get_current_commands<R, W, E>(context: &mut RotfContext<R, W, E>) -> Hash
   all_cmds.append(&mut Command::system_commands());
   all_cmds.append(&mut Command::context_state_commands(context));
   for cmd in all_cmds {
-    cmds.insert(cmd.name().to_string(), cmd.clone());
+    cmds.insert(cmd.name().to_owned(), cmd.clone());
     for alias in cmd.aliases() {
-      cmds.insert(alias.to_string(), cmd.clone());
+      cmds.insert(alias.to_owned(), cmd.clone());
     }
   }
   return cmds;
