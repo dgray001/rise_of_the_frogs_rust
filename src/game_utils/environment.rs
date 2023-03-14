@@ -38,6 +38,16 @@ impl FromStr for Position {
   }
 }
 
+impl Position {
+  pub fn distance(&self) -> u64 {
+    match self {
+      Position::NEAR => 1,
+      Position::MEDIUM => 2,
+      Position::FAR => 3,
+    }
+  }
+}
+
 
 // Trait for position
 pub trait Positionable {
@@ -47,8 +57,8 @@ pub trait Positionable {
 
 // Environment player is in
 pub struct RotfEnvironment {
-  units: Vec<Unit>,
-  items: Vec<Item>,
+  pub units: Vec<Unit>,
+  pub items: Vec<Item>,
 }
 
 impl RotfEnvironment {
@@ -77,8 +87,8 @@ impl RotfEnvironment {
   pub fn load(&mut self, save_name: String) -> Result<(), Error> {
     let mut in_unit = false;
     let mut in_item = false;
-    let mut curr_unit = Unit::new();
-    let mut curr_item = Item::new();
+    let mut curr_unit = Unit::new(0);
+    let mut curr_item = Item::new(0);
     for oline in filesystem::open_file(format!("data/saves/{}/environment.rotf", save_name))?.lines() {
       let line = oline?;
       if !line.clone().contains(":") {
@@ -91,7 +101,7 @@ impl RotfEnvironment {
         "%%% END UNIT" => {
           in_unit = false;
           self.units.push(curr_unit);
-          curr_unit = Unit::new();
+          curr_unit = Unit::new(0);
         }
         "%%% BEGIN ITEM" => {
           in_item = true;
@@ -99,7 +109,7 @@ impl RotfEnvironment {
         "%%% END ITEM" => {
           in_item = false;
           self.items.push(curr_item);
-          curr_item = Item::new();
+          curr_item = Item::new(0);
         }
         _ => {},
       }

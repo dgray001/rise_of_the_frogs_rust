@@ -1,5 +1,6 @@
 mod system_commands;
 mod context_state_commands;
+mod environment_commands;
   
 use std::{collections::HashMap, io::{Write, BufRead}};
 
@@ -61,6 +62,8 @@ pub enum Command {
   VIEW,
   TURN,
   MOVE,
+  FIGHT,
+  PICKUP,
   // GameState::COMBAT Commands
   FLEE,
 }
@@ -79,9 +82,7 @@ impl Command {
       ContextState::INGAME => {
         let mut context_cmds = vec![Command::ME, Command::SAVE];
         let mut game_cmds = match &context.curr_game {
-          Some(game) => {
-            return game.commands();
-          }
+          Some(game) => game.commands(),
           None => vec![],
         };
         context_cmds.append(&mut game_cmds);
@@ -105,6 +106,10 @@ impl Command {
       // ContextState::INGAME Commands
       Command::ME => "me",
       Command::SAVE => "save",
+      // GameState::ENVIRONMENT Commands
+      Command::VIEW => "view",
+      Command::FIGHT => "fight",
+      Command::PICKUP => "pickup",
       // GameState::COMBAT Commands
       _ => "",
     }
@@ -124,6 +129,10 @@ impl Command {
       // ContextState::INGAME Commands
       Command::ME => "Display info about the current player",
       Command::SAVE => "Save your progress and return to the main menu",
+      // GameState::ENVIRONMENT Commands
+      Command::VIEW => "View your surroundings",
+      Command::FIGHT => "Fight the specified unit in your view",
+      Command::PICKUP => "Pickup the specified item in your view",
       // GameState::COMBAT Commands
       _ => "Not implemented",
     }
@@ -180,6 +189,22 @@ impl Command {
         context.println("Saves your progress and returns to the main menu");
         context.println("Since the game saves itself as you play, this command is more so you can switch save games");
       },
+      // GameState::ENVIRONMENT Commands
+      Command::VIEW => {
+        context.println("View your current surroundings");
+        context.println("You will see things based on how far you can view");
+      },
+      
+      Command::FIGHT => {
+        context.println("Usage: 'fight {{arg}}'");
+        context.println("Arg is the index of the viewable unit to fight");
+        context.println("To see the viewable index of units you can fight, use 'view'");
+      },
+      Command::PICKUP => {
+        context.println("Usage: 'pickup {{arg}}'");
+        context.println("Arg is the index of the viewable item to pickup");
+        context.println("To see the viewable index of items you can pickup, use 'view'");
+      },
       // GameState::COMBAT Commands
       _ => {
         context.println("Not implemented.");
@@ -191,6 +216,9 @@ impl Command {
       Command::LS => vec!["list"],
       Command::HELP => vec!["?"],
       Command::EXIT => vec!["quit"],
+      Command::VIEW => vec!["vw"],
+      Command::FIGHT => vec!["fi"],
+      Command::PICKUP => vec!["pi"],
       _ => vec![],
     }
   }
@@ -213,6 +241,10 @@ impl Command {
       // ContextState::INGAME Commands
       Command::ME => context_state_commands::me(context),
       Command::SAVE => context_state_commands::save(context),
+      // GameState::ENVIRONMENT Commands
+      Command::VIEW => environment_commands::command(context, "view"),
+      Command::FIGHT => environment_commands::command(context, "fight"),
+      Command::PICKUP => environment_commands::command(context, "pickup"),
       // GameState::COMBAT Commands
       _ => {},
     }

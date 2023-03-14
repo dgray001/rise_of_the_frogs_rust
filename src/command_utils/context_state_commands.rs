@@ -249,9 +249,12 @@ fn launch_load<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
             Ok(game) => {
               context.curr_game = Some(game);
               context.context_state = ContextState::INGAME;
-              context.println("Launching game");
+              context.println("Launching game\n");
+              me(context);
             },
-            Err(_e) => {},
+            Err(e) => {
+              context.print_error("loading game", &e);
+            },
           }
           return;
         }

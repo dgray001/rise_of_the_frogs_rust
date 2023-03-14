@@ -8,7 +8,7 @@ use std::io::{Error, BufRead};
 use std::str::FromStr;
 
 mod player;
-mod environment;
+pub mod environment;
 mod unit;
 mod item;
 

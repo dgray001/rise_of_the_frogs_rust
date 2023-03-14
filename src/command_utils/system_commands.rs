@@ -9,10 +9,10 @@ pub fn ls<R, W, E>(context: &mut RotfContext<R, W, E>) where
   W: Write,
   E: Write,
 {
-  context.println("Context Commands:");
-  list_commands(Command::context_state_commands(context), context);
   context.println("\nSystem Commands:");
   list_commands(Command::system_commands(), context);
+  context.println("Context Commands:");
+  list_commands(Command::context_state_commands(context), context);
 }
 
 fn list_commands<R, W, E>(cmds: Vec<Command>, context: &mut RotfContext<R, W, E>) where
