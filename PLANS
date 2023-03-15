@@ -1,7 +1,6 @@
 This file outlines known bugs, planned features, and tracks progress on current development
 
-v0.2.2: Inventory
- 3: Pickup command
+v0.2.3: UnitLoader
  4: Use command (usable items)
  5: After each command something might drift away (exception is view command and any system command)
  6: Inventory command (open inventory, can use 'inv') inventory is a whole other GameState

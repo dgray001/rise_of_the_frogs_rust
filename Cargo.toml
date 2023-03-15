@@ -9,6 +9,7 @@ edition = "2021"
 itertools = "0.8"
 strum = "0.24.1"
 strum_macros = "0.24.3"
+rand = "0.8.4"
 
 [dev-dependencies]
 rstest = "0.16.0"

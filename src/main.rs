@@ -1,11 +1,12 @@
+#[path = "context/context.rs"] mod context;
 #[path = "command_utils/commands.rs"] mod commands;
 #[path = "game_utils/game.rs"] mod game;
 #[path = "game_utils/cutscene.rs"] mod cutscene;
 #[path = "utils/filesystem.rs"] mod filesystem;
+#[path = "utils/numeric.rs"] mod numeric;
 #[path = "options.rs"] mod options;
 
 mod credits;
-mod context;
 
 use context::RotfContext;
 

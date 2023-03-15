@@ -31,11 +31,14 @@ pub fn parse_command<R, W, E>(cmd: &str, context: &mut RotfContext<R, W, E>) whe
   }
   // Play cutscene if relevant
   RotfCutscene::resolve_context(context);
-  // Save game
-  match &context.curr_game {
-    Some(game) => match game.save() {
-      Ok(()) => {},
-      Err(e) => context.print_error("saving game", &e),
+  // Update and save game
+  match &mut context.curr_game {
+    Some(game) => {
+      game.update(&context.unit_loader);
+      match game.save() {
+        Ok(()) => {},
+        Err(e) => context.print_error("saving game", &e),
+      }
     },
     None => {},
   }

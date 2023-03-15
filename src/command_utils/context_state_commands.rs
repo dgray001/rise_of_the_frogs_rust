@@ -185,9 +185,7 @@ fn launch_new<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
       return;
     }
   }
-  context.curr_game = Some(new_game);
-  context.context_state = context::ContextState::INGAME;
-  context.println("\nLaunching new game ...");
+  context.launch_game(new_game, true);
 }
 
 fn choose_difficulty<R, W, E>(context: &mut context::RotfContext<R, W, E>) -> Result<RotfDifficulty, Error> where
@@ -247,9 +245,7 @@ fn launch_load<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
         if &save_name == &context.last_params {
           match game::RotfGame::load(save_name) {
             Ok(game) => {
-              context.curr_game = Some(game);
-              context.context_state = ContextState::INGAME;
-              context.println("Launching game\n");
+              context.launch_game(game, false);
               me(context);
             },
             Err(e) => {

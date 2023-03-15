@@ -1,6 +1,7 @@
 use std::{fmt, str::FromStr};
+use rand::seq::SliceRandom;
 
-use super::environment::{Position, Positionable};
+use super::{environment::{Position, Positionable}, player::RotfPlayer};
 
 
 pub struct Item {
@@ -29,6 +30,21 @@ impl Item {
       view_index: 0,
     }
   }
+
+  pub fn spawn(player: &RotfPlayer) -> Item {
+    let possible_ids = Item::possible_ids(player.tier());
+    match possible_ids.choose(&mut rand::thread_rng()) {
+      Some(id) => return Item::new(*id),
+      None => return Item::new(0),
+    }
+  }
+
+  fn possible_ids(tier: u8) -> Vec<u64> {
+    match tier {
+      _ => vec![],
+    }
+  }
+
   pub fn file_content(&self) -> String {
     let mut contents = String::new();
     contents += &format!("\n   id: {}", self.id);
@@ -41,8 +57,8 @@ impl Item {
     let (key, mut value) = line.split_once(":").unwrap();
     value = value.trim();
     match key.trim() {
-      "id" => self.id = value.parse::<u64>().unwrap_or(0),
-      "position" => self.position = Position::from_str(value).unwrap_or(Position::FAR),
+      "id"         => self.id         = value.parse::<u64>().unwrap_or(0),
+      "position"   => self.position   = Position::from_str(value).unwrap_or(Position::FAR),
       "view_index" => self.view_index = value.parse::<i64>().unwrap_or(-1),
       _ => {},
     }

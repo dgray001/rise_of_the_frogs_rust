@@ -28,7 +28,7 @@ impl RotfPlayer {
     return self.view_distance.distance() >= thing.position().distance();
   }
 
-  fn tier(&self) -> u8 {
+  pub fn tier(&self) -> u8 {
     return 1 + self.level / 10;
   }
 

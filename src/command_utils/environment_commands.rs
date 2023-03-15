@@ -42,13 +42,16 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   let mut output_str = String::new();
   let mut index = 1;
   for unit in game.environment.units.iter_mut() {
-    if !game.player.can_view(unit) {
+    if unit.despawn() || !game.player.can_view(unit) {
       unit.view_index = -1;
       continue;
     }
     unit.view_index = index;
+    if index == 1 {
+      output_str += "Units\n";
+    }
     index += 1;
-    output_str += unit.to_string().as_str();
+    output_str += &format!("{}\n", unit);
   }
   index = 1;
   for item in game.environment.items.iter_mut() {
@@ -57,8 +60,11 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
       continue;
     }
     item.view_index = index;
+    if index == 1 {
+      output_str += "\nItems\n";
+    }
     index += 1;
-    output_str += item.to_string().as_str();
+    output_str += &format!("{}\n", item);
   }
   context.println(output_str.as_str());
 }

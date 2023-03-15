@@ -2,8 +2,10 @@ use std::fmt;
 use std::str::FromStr;
 use std::io::{Error, BufRead};
 
+use crate::context::unit_loader::UnitLoader;
 use crate::filesystem;
 
+use super::player::RotfPlayer;
 use super::unit::Unit;
 use super::item::Item;
 
@@ -69,17 +71,50 @@ impl RotfEnvironment {
     }
   }
 
+  pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader) {
+    // allow units to move
+    for unit in self.units.iter_mut() {
+      unit.possible_move();
+    }
+    // despawn units
+    self.units.retain(|u| !u.despawn());
+    // respawn units
+    let num_units = self.num_units(player.tier());
+    while self.units.len() < num_units {
+      self.units.push(Unit::new(unit_loader.spawn()));
+    }
+    // despawn items
+    // spawn items
+    let num_items = self.num_items(player.tier());
+    while self.items.len() < num_items {
+      self.items.push(Item::spawn(player));
+    }
+  }
+
+  fn num_units(&self, tier: u8) -> usize {
+    match tier {
+      1 => 10,
+      _ => 0,
+    }
+  }
+
+  fn num_items(&self, tier: u8) -> usize {
+    match tier {
+      _ => 0,
+    }
+  }
+
   pub fn file_content(&self) -> String {
     let mut contents = String::new();
     for unit in &self.units {
-      contents += "%%% BEGIN UNIT";
+      contents += "\n%%% BEGIN UNIT";
       contents += &unit.file_content();
-      contents += "%%% END UNIT";
+      contents += "\n%%% END UNIT\n";
     }
     for item in &self.items {
-      contents += "%%% BEGIN ITEM";
+      contents += "\n%%% BEGIN ITEM";
       contents += &item.file_content();
-      contents += "%%% END ITEM";
+      contents += "\n%%% END ITEM\n";
     }
     return contents;
   }

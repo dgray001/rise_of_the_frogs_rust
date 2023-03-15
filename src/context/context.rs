@@ -9,12 +9,20 @@ use std::io::{BufRead, Write, self};
 use std::thread;
 use std::time::Duration;
 
+use self::unit_loader::UnitLoader;
+
+pub mod unit_loader;
+
+
+// Overall program state
 #[derive(Clone, Debug, PartialEq)]
 pub enum ContextState {
   HOME,
   INGAME,
 }
 
+
+// Context object
 pub struct RotfContext<R, W, E> where
   R: BufRead,
   W: Write,
@@ -34,6 +42,7 @@ pub struct RotfContext<R, W, E> where
   pub last_params: String,
 
   pub curr_game: Option<RotfGame>,
+  pub unit_loader: unit_loader::UnitLoader,
 }
 
 impl<R, W, E> RotfContext<R, W, E> where
@@ -156,6 +165,7 @@ impl<R, W, E> RotfContext<R, W, E> where
       last_params: "".to_owned(),
   
       curr_game: None,
+      unit_loader: UnitLoader::new(), // empty loader
     };
     context.commands = commands::get_current_commands(&mut context);
     return context;
@@ -167,9 +177,32 @@ impl<R, W, E> RotfContext<R, W, E> where
     context.commands = commands::get_current_commands(&mut context);
     return context;
   }
+
+  pub fn launch_game(&mut self, game: RotfGame, new: bool) {
+    if new {
+      self.println("Launching new game ...\n");
+    }
+    else {
+      self.println("Launching game ...\n");
+    }
+    // load unit data
+    match self.unit_loader.load_data() {
+      Ok(()) => {},
+      Err(e) => {
+        self.print_error("loading unit data", &e);
+        return;
+      },
+    }
+    self.unit_loader.update_current_units(&game.player);
+    // load item data
+    // launch game
+    self.curr_game = Some(game);
+    self.context_state = ContextState::INGAME;
+  }
 }
 
 
+// Testing
 #[cfg(test)]
 pub mod test_context {
   use crate::{game::RotfGame, context::*};

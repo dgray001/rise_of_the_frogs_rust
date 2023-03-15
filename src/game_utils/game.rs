@@ -1,13 +1,14 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+use crate::context::unit_loader::UnitLoader;
 use crate::{filesystem, commands::Command, cutscene};
 
 use std::fmt;
 use std::io::{Error, BufRead};
 use std::str::FromStr;
 
-mod player;
+pub mod player;
 pub mod environment;
 mod unit;
 mod item;
@@ -99,6 +100,22 @@ impl RotfGame {
     }
   }
 
+  pub fn commands(&self) -> Vec<Command> {
+    match self.state {
+      GameState::CUTSCENE => vec![],
+      GameState::ENVIRONMENT => self.player.environment_commands(),
+    }
+  }
+
+  pub fn update(&mut self, loader: &UnitLoader) {
+    match self.state {
+      GameState::ENVIRONMENT => {
+        self.environment.update(&self.player, loader);
+      },
+      _ => {},
+    }
+  }
+
   pub fn load(name: String) -> Result<RotfGame, Error> {
     let save_name = str::replace(name.as_str(), " ", "_");
     let mut game = RotfGame::new(save_name.clone(), RotfDifficulty::default());
@@ -139,12 +156,5 @@ impl RotfGame {
     contents += &format!("\nstate: {}", self.state);
     contents += &format!("\ndifficulty: {}", self.difficulty);
     return contents;
-  }
-
-  pub fn commands(&self) -> Vec<Command> {
-    match self.state {
-      GameState::CUTSCENE => vec![],
-      GameState::ENVIRONMENT => self.player.environment_commands(),
-    }
   }
 }
