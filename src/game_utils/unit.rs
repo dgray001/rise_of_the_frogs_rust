@@ -1,15 +1,19 @@
 use std::{fmt, str::FromStr};
 
 use crate::numeric::random_chance;
+use crate::context::unit_loader::UnitLoader;
 
 use super::environment::{Position, Positionable};
 
 
+// Struct containing data about a single AI unit
 pub struct Unit {
   id: u64,
   despawn: bool,
   position: Position,
   pub view_index: i64,
+
+  pub level: u8,
 }
 
 impl fmt::Display for Unit {
@@ -25,12 +29,13 @@ impl Positionable for Unit {
 }
 
 impl Unit {
-  pub fn new(id: u64) -> Unit {
+  pub fn new(id: u64, level: u8) -> Unit {
     return Unit {
       id,
       despawn: false,
       position: Position::FAR,
       view_index: 0,
+      level,
     }
   }
 
@@ -38,8 +43,9 @@ impl Unit {
     return self.despawn;
   }
 
-  pub fn possible_move(&mut self) {
-    if random_chance(0.40) {
+  pub fn possible_move(&mut self, time: f64) {
+    let chance_moved = time * 0.25;
+    if random_chance(1.0 - chance_moved) {
       return;
     }
     let mut new_position = self.position.clone();
@@ -72,12 +78,18 @@ impl Unit {
     self.position = new_position;
   }
 
+  pub fn view_short(&self, unit_loader: &UnitLoader) -> String {
+    let data = unit_loader.get_data(self.id);
+    return format!("{} ({})", data.name, self.level);
+  }
+
   pub fn file_content(&self) -> String {
     let mut contents = String::new();
     contents += &format!("\n   id: {}", self.id);
     contents += &format!("\n   position: {}", self.position);
     contents += &format!("\n   view_index: {}", self.view_index);
     contents += &format!("\n   despawn: {}", self.despawn);
+    contents += &format!("\n   level: {}", self.level);
     return contents;
   }
 
@@ -89,6 +101,7 @@ impl Unit {
       "position"   => self.position   = Position::from_str(value).unwrap_or(Position::FAR),
       "view_index" => self.view_index = value.parse::<i64>().unwrap_or(-1),
       "despawn"    => self.despawn    = value.parse::<bool>().unwrap_or(true),
+      "level"         => self.level   = value.parse::<u8>().unwrap_or(0),
       _ => {},
     }
   }

@@ -12,6 +12,7 @@ use std::time::Duration;
 use self::unit_loader::UnitLoader;
 
 pub mod unit_loader;
+pub mod constants;
 
 
 // Overall program state

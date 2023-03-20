@@ -50,8 +50,8 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     if index == 1 {
       output_str += "Units\n";
     }
+    output_str += &format!("  {}: {}\n", index, unit.view_short(&context.unit_loader));
     index += 1;
-    output_str += &format!("{}\n", unit);
   }
   index = 1;
   for item in game.environment.items.iter_mut() {
@@ -63,9 +63,10 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     if index == 1 {
       output_str += "\nItems\n";
     }
+    output_str += &format!("  {}: {}\n", index, item);
     index += 1;
-    output_str += &format!("{}\n", item);
   }
+  game.environment.pass_time();
   context.println(output_str.as_str());
 }
 
@@ -93,6 +94,7 @@ fn fight<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
         context.println("Unit no longer in view. Use 'view' to update view");
         return;
       }
+      game.environment.pass_time();
       context.println("FIGHT");
     },
     None => {
@@ -137,6 +139,7 @@ fn pickup<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
           context.println("Inventory full");
         },
         None => {
+          game.environment.pass_time();
           context.println(&format!("Picked up {}", item_string));
         },
       }
