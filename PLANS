@@ -1,19 +1,25 @@
 This file outlines known bugs, planned features, and tracks progress on current development
 
-v0.2.4: Units spawn with level
- 5: After each command something might drift away (exception is view command and any system command)
- 6: Inventory command (open inventory, can use 'inv') inventory is a whole other GameState
- 7: Use and equip commands
- 8: Player unlockables (condition trait for each unlockable)
- 9: Achievements (check after each command)
- 10: Level up
- 11: Tier up (go to next chapter)
- 12: Combatable trait extends Damagable (impl for Player and Unit)
- 13: Environment features (which are Damagable)
- 14: Turn-based combat
- 15: Quests (check after each command) has condition trait (like achievement)
- 16: Currency for shops (can purchase is a condition trait)
- 17: Have secondary currency which is used to unlock player unlockables
+v0.2.5: Wait command
+ 6: Item loader / spawner
+ 7: Inv cmd opens a new GameState
+ 8: Pickup / drop cmds
+ 9: Condition struct (used for achivements/quests/unlockables/etc...)
+ 10: Experience and leveling up
+ 11: Tier up (next chapter / cutscene)
+ 12: Use cmd
+ 13: Equip cmd (Item has type)
+ 14: Player unlockables
+ 15: Achievements
+ 16: Damageable trait
+ 17: Combatable trait extends Damageable
+ 18: Environment features (Damageable)
+ 19: Quests
+ 20: Currency (2 types)
+ 21: Combat abilities for each unit
+ 22: Simple turn-based combat
+ 23: Units have drops
+ 24: Death logic (lose some items which will be recoverable for a fee, also lose currency/xp)
 
 v0.4: Chapter I
  - Auto-generation of tier I units and items and features and NPCs
@@ -41,4 +47,4 @@ Other tiers:
  - Space travel (maybe decision for planets to visit)
 
 
-// 73939133 is the largest right-truncatable prime number and the code an easter egg
+// 73939133 is the largest right-truncatable prime number and the code for an easter egg

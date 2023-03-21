@@ -63,8 +63,7 @@ pub enum Command {
   SAVE,
   // GameState::ENVIRONMENT Commands
   VIEW,
-  TURN,
-  MOVE,
+  WAIT,
   FIGHT,
   PICKUP,
   INVENTORY,
@@ -112,6 +111,7 @@ impl Command {
       Command::SAVE => "save",
       // GameState::ENVIRONMENT Commands
       Command::VIEW => "view",
+      Command::WAIT => "wait",
       Command::FIGHT => "fight",
       Command::PICKUP => "pickup",
       Command::INVENTORY => "inventory",
@@ -136,6 +136,7 @@ impl Command {
       Command::SAVE => "Save your progress and return to the main menu",
       // GameState::ENVIRONMENT Commands
       Command::VIEW => "View your surroundings",
+      Command::WAIT => "Pass time viewing your surroundings",
       Command::FIGHT => "Fight the specified unit in your view",
       Command::PICKUP => "Pickup the specified item in your view",
       Command::INVENTORY => "View your inventory",
@@ -200,7 +201,10 @@ impl Command {
         context.println("View your current surroundings");
         context.println("You will see things based on how far you can view");
       },
-      
+      Command::WAIT => {
+        context.println("Wait for time to pass");
+        context.println("You will also view your surroundings");
+      },
       Command::FIGHT => {
         context.println("Usage: 'fight {{arg}}'");
         context.println("Arg is the index of the viewable unit to fight");
@@ -252,7 +256,7 @@ impl Command {
       Command::ME => context_state_commands::me(context),
       Command::SAVE => context_state_commands::save(context),
       // GameState::ENVIRONMENT Commands
-      Command::VIEW | Command::FIGHT | Command::PICKUP | Command::INVENTORY => {
+      Command::VIEW | Command::WAIT |  Command::FIGHT | Command::PICKUP | Command::INVENTORY => {
         environment_commands::command(context, self.name());
       },
       // GameState::COMBAT Commands

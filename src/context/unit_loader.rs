@@ -39,6 +39,9 @@ impl UnitLoader {
       // id
       match data.get(1).unwrap().parse::<u64>() {
         Ok(id) => {
+          if id < 1 {
+            continue;
+          }
           unit.id = id;
         },
         Err(_) => {
@@ -46,7 +49,10 @@ impl UnitLoader {
         }
       }
       // name
-      unit.name = data.get(2).unwrap().to_owned();
+      unit.name = data.get(2).unwrap().trim().to_owned();
+      if unit.name.is_empty() {
+        continue;
+      }
       // level range
       unit.level_range = IntegerRange::from_str(data.get(3).unwrap());
       // add to unit data

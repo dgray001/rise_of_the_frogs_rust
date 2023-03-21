@@ -15,6 +15,7 @@ pub fn command<R, W, E>(context: &mut context::RotfContext<R, W, E>, cmd: &str) 
       if game.state == GameState::ENVIRONMENT {
         match cmd {
           "view" => view(context),
+          "wait" => wait(context),
           "fight" => fight(context),
           "pickup" => pickup(context),
           "inventory" => inventory(context),
@@ -66,8 +67,17 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     output_str += &format!("  {}: {}\n", index, item);
     index += 1;
   }
-  game.environment.pass_time();
   context.println(output_str.as_str());
+}
+
+fn wait<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  view(context);
+  let game = context.curr_game.as_mut().unwrap();
+  game.environment.pass_time();
 }
 
 fn fight<R, W, E>(context: &mut context::RotfContext<R, W, E>) where

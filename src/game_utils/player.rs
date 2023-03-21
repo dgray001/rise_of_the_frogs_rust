@@ -21,7 +21,7 @@ impl RotfPlayer {
   }
 
   pub fn environment_commands(&self) -> Vec<Command> {
-    return vec![Command::VIEW, Command::FIGHT, Command::PICKUP, Command::INVENTORY];
+    return vec![Command::VIEW, Command::WAIT, Command::FIGHT, Command::PICKUP, Command::INVENTORY];
   }
 
   pub fn can_view(&self, thing: &dyn Positionable) -> bool {
