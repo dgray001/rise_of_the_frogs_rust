@@ -183,7 +183,7 @@ impl<R, W, E> RotfContext<R, W, E> where
     return context;
   }
 
-  pub fn launch_game(&mut self, game: RotfGame, new: bool) {
+  pub fn launch_game(&mut self, mut game: RotfGame, new: bool) {
     if new {
       self.println("Launching new game ...\n");
     }
@@ -208,6 +208,10 @@ impl<R, W, E> RotfContext<R, W, E> where
       },
     }
     self.item_loader.update_current_items(&game.player);
+    // initial spawns
+    if new {
+      game.initial_spawns(&self.unit_loader, &self.item_loader);
+    }
     // launch game
     self.curr_game = Some(game);
     self.context_state = ContextState::INGAME;

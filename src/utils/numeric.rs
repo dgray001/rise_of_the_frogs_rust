@@ -6,6 +6,7 @@ pub fn random_chance(x: f64) -> bool {
   return rng.gen::<f64>() < x;
 }
 
+// inclusive upper bound
 pub fn random_int<T>(min: T, max: T) -> T where
   T: std::cmp::PartialOrd + rand::distributions::uniform::SampleUniform
 {

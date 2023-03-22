@@ -1,6 +1,6 @@
 This file outlines known bugs, planned features, and tracks progress on current development
 
-v0.2.7: Items spawn / despawn
+v0.2.8: Initial spawns
  7: Inv cmd opens a new GameState
  8: Pickup / drop cmds
  9: Condition struct (used for achivements/quests/unlockables/etc...)

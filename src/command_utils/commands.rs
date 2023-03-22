@@ -230,6 +230,7 @@ impl Command {
       Command::HELP => vec!["?"],
       Command::EXIT => vec!["quit"],
       Command::VIEW => vec!["vw"],
+      Command::WAIT => vec!["wt"],
       Command::FIGHT => vec!["fi"],
       Command::PICKUP => vec!["pi"],
       Command::INVENTORY => vec!["inv"],

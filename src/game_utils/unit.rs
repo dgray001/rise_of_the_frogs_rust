@@ -1,6 +1,7 @@
 use std::{fmt, str::FromStr};
 
-use crate::numeric::random_chance;
+use crate::numeric::{random_chance, random_int};
+use crate::context::constants;
 use crate::context::unit_loader::UnitLoader;
 
 use super::environment::{Position, Positionable};
@@ -26,6 +27,13 @@ impl Positionable for Unit {
   fn position(&self) -> Position {
     return self.position.clone();
   }
+  fn randomize_position(&mut self) {
+    match random_int(1, 3) {
+      1 => self.position = Position::NEAR,
+      2 => self.position = Position::MEDIUM,
+      _ => self.position = Position::FAR,
+    }
+  }
 }
 
 impl Unit {
@@ -44,7 +52,7 @@ impl Unit {
   }
 
   pub fn possible_move(&mut self, time: f64) {
-    let chance_moved = time * 0.25;
+    let chance_moved = time * constants::UNIT_MOVE_CHANCE;
     if random_chance(1.0 - chance_moved) {
       return;
     }

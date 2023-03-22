@@ -1,5 +1,7 @@
 use std::{fmt, str::FromStr};
 
+use crate::numeric::{random_chance, random_int};
+use crate::context::constants;
 use crate::context::item_loader::ItemLoader;
 
 use super::environment::{Position, Positionable};
@@ -25,6 +27,13 @@ impl Positionable for Item {
   fn position(&self) -> Position {
     return self.position.clone();
   }
+  fn randomize_position(&mut self) {
+    match random_int(1, 3) {
+      1 => self.position = Position::NEAR,
+      2 => self.position = Position::MEDIUM,
+      _ => self.position = Position::FAR,
+    }
+  }
 }
 
 impl Item {
@@ -32,7 +41,7 @@ impl Item {
     return Item {
       id,
       despawn: false,
-      position: Position::MEDIUM,
+      position: Position::FAR,
       view_index: 0,
       level,
     }
@@ -40,6 +49,38 @@ impl Item {
 
   pub fn despawn(&self) -> bool {
     return self.despawn;
+  }
+
+  pub fn possible_move(&mut self, time: f64) {
+    let chance_moved = time * constants::ITEM_MOVE_CHANCE;
+    if random_chance(1.0 - chance_moved) {
+      return;
+    }
+    let mut new_position = self.position.clone();
+    match self.position {
+      Position::FAR => {
+        if random_chance(0.5) {
+          new_position = Position::MEDIUM;
+        }
+        else {
+          self.despawn = true;
+        }
+      },
+      Position::MEDIUM => {
+        if random_chance(0.5) {
+          new_position = Position::FAR;
+        }
+        else {
+          new_position = Position::NEAR;
+        }
+      },
+      Position::NEAR => {
+        if random_chance(0.5) {
+          new_position = Position::MEDIUM;
+        }
+      },
+    }
+    self.position = new_position;
   }
 
   pub fn view_short(&self, loader: &ItemLoader) -> String {

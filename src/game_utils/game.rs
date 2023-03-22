@@ -101,6 +101,10 @@ impl RotfGame {
     }
   }
 
+  pub fn initial_spawns(&mut self, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
+    self.environment.initial_spawns(&self.player, unit_loader, item_loader);
+  }
+
   pub fn commands(&self) -> Vec<Command> {
     match self.state {
       GameState::CUTSCENE => vec![],

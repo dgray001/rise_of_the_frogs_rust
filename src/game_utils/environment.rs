@@ -55,6 +55,7 @@ impl Position {
 // Trait for position
 pub trait Positionable {
   fn position(&self) -> Position;
+  fn randomize_position(&mut self);
 }
 
 
@@ -79,6 +80,25 @@ impl RotfEnvironment {
     self.time_passed += 1;
   }
 
+  pub fn initial_spawns(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
+    // spawn units
+    let num_units = self.num_units(player.tier());
+    while self.units.len() < num_units {
+      let (id, level) = unit_loader.spawn();
+      let mut new_unit = Unit::new(id, level);
+      new_unit.randomize_position();
+      self.units.push(new_unit);
+    }
+    // spawn items
+    let num_items = self.num_items(player.tier());
+    while self.items.len() < num_items {
+      let (id, level) = item_loader.spawn();
+      let mut new_item = Item::new(id, level);
+      new_item.randomize_position();
+      self.items.push(new_item);
+    }
+  }
+
   pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     // allow units to move
     for unit in self.units.iter_mut() {
@@ -92,9 +112,13 @@ impl RotfEnvironment {
       let (id, level) = unit_loader.spawn();
       self.units.push(Unit::new(id, level));
     }
+    // allow items to move
+    for item in self.items.iter_mut() {
+      item.possible_move(self.time_passed.into());
+    }
     // despawn items
     self.items.retain(|i| !i.despawn());
-    // spawn items
+    // respawn items
     let num_items = self.num_items(player.tier());
     while self.items.len() < num_items {
       let (id, level) = item_loader.spawn();
