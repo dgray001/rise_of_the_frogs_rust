@@ -37,7 +37,7 @@ impl UnitLoader {
       }
       let mut unit = UnitData::new();
       // id
-      match data.get(1).unwrap().parse::<u64>() {
+      match data.get(1).unwrap().trim().parse::<u64>() {
         Ok(id) => {
           if id < 1 {
             continue;
@@ -54,7 +54,7 @@ impl UnitLoader {
         continue;
       }
       // level range
-      unit.level_range = IntegerRange::from_str(data.get(3).unwrap());
+      unit.level_range = IntegerRange::from_str(data.get(3).unwrap().trim());
       // add to unit data
       match self.unit_data.insert(unit.id, unit) {
         Some(previous_unit) => {

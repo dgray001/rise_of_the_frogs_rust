@@ -83,16 +83,22 @@ impl RotfEnvironment {
   pub fn initial_spawns(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     // spawn units
     let num_units = self.num_units(player.tier());
-    while self.units.len() < num_units {
+    for _ in 0..num_units {
       let (id, level) = unit_loader.spawn();
+      if id < 1 {
+        continue;
+      }
       let mut new_unit = Unit::new(id, level);
       new_unit.randomize_position();
       self.units.push(new_unit);
     }
     // spawn items
     let num_items = self.num_items(player.tier());
-    while self.items.len() < num_items {
+    for _ in 0..num_items {
       let (id, level) = item_loader.spawn();
+      if id < 1 {
+        continue;
+      }
       let mut new_item = Item::new(id, level);
       new_item.randomize_position();
       self.items.push(new_item);
@@ -108,8 +114,12 @@ impl RotfEnvironment {
     self.units.retain(|u| !u.despawn());
     // respawn units
     let num_units = self.num_units(player.tier());
-    while self.units.len() < num_units {
+    let unit_spawns = num_units - self.units.len();
+    for _ in 0..unit_spawns {
       let (id, level) = unit_loader.spawn();
+      if id < 1 {
+        continue;
+      }
       self.units.push(Unit::new(id, level));
     }
     // allow items to move
@@ -120,8 +130,12 @@ impl RotfEnvironment {
     self.items.retain(|i| !i.despawn());
     // respawn items
     let num_items = self.num_items(player.tier());
-    while self.items.len() < num_items {
+    let item_spawns = num_items - self.items.len();
+    for _ in 0..item_spawns {
       let (id, level) = item_loader.spawn();
+      if id < 1 {
+        continue;
+      }
       self.items.push(Item::new(id, level));
     }
     // reset time
@@ -137,6 +151,7 @@ impl RotfEnvironment {
 
   fn num_items(&self, tier: u8) -> usize {
     match tier {
+      1 => 3,
       _ => 0,
     }
   }

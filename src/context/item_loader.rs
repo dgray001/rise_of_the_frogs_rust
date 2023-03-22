@@ -32,12 +32,12 @@ impl ItemLoader {
   pub fn load_data(&mut self) -> Result<(), Error> {
     for oline in filesystem::open_file(format!("data/items/data.csv"))?.lines() {
       let data: Vec<String> = oline?.trim().split(",").map(|s| s.to_string()).collect();
-      if data.len() < 4 {
+      if data.len() < 5 {
         continue;
       }
       let mut item = ItemData::new();
       // id
-      match data.get(1).unwrap().parse::<u64>() {
+      match data.get(1).unwrap().trim().parse::<u64>() {
         Ok(id) => {
           if id < 1 {
             continue;
@@ -54,7 +54,9 @@ impl ItemLoader {
         continue;
       }
       // level range
-      item.level_range = IntegerRange::from_str(data.get(3).unwrap());
+      item.level_range = IntegerRange::from_str(data.get(3).unwrap().trim());
+      // spawn range
+      item.spawn_range = IntegerRange::from_str(data.get(4).unwrap().trim());
       // add to item data
       match self.item_data.insert(item.id, item) {
         Some(previous_item) => {
@@ -115,6 +117,7 @@ pub struct ItemData {
   pub id: u64,
   pub name: String,
   pub level_range: IntegerRange,
+  pub spawn_range: IntegerRange,
 }
 
 impl ItemData {
@@ -123,6 +126,7 @@ impl ItemData {
       id: 0,
       name: "".to_owned(),
       level_range: IntegerRange::new(),
+      spawn_range: IntegerRange::new(),
     }
   }
 }
