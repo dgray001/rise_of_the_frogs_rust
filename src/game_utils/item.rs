@@ -6,8 +6,11 @@ use super::{environment::{Position, Positionable}, player::RotfPlayer};
 
 pub struct Item {
   id: u64,
+  despawn: bool,
   position: Position,
   pub view_index: i64,
+
+  pub level: u8,
 }
 
 impl fmt::Display for Item {
@@ -26,8 +29,10 @@ impl Item {
   pub fn new(id: u64) -> Item {
     return Item {
       id,
+      despawn: false,
       position: Position::MEDIUM,
       view_index: 0,
+      level: 0,
     }
   }
 
@@ -50,6 +55,8 @@ impl Item {
     contents += &format!("\n   id: {}", self.id);
     contents += &format!("\n   position: {}", self.position);
     contents += &format!("\n   view_index: {}", self.view_index);
+    contents += &format!("\n   despawn: {}", self.despawn);
+    contents += &format!("\n   level: {}", self.level);
     return contents;
   }
 
@@ -60,6 +67,8 @@ impl Item {
       "id"         => self.id         = value.parse::<u64>().unwrap_or(0),
       "position"   => self.position   = Position::from_str(value).unwrap_or(Position::FAR),
       "view_index" => self.view_index = value.parse::<i64>().unwrap_or(-1),
+      "despawn"    => self.despawn    = value.parse::<bool>().unwrap_or(true),
+      "level"      => self.level      = value.parse::<u8>().unwrap_or(0),
       _ => {},
     }
   }

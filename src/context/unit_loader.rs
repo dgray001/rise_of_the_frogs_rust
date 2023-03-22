@@ -81,7 +81,7 @@ impl UnitLoader {
       Some(id) => {
         let unit = self.unit_data.get(id).unwrap_or(&self.error_unit_data);
         let mut min_player_level = self.current_level;
-        if self.current_level > 5 {
+        if self.current_level > constants::UNIT_SPAWN_RANGE {
           min_player_level -= constants::UNIT_SPAWN_RANGE;
         }
         else {
