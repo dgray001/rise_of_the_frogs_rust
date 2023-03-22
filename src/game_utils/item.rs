@@ -1,9 +1,11 @@
 use std::{fmt, str::FromStr};
-use rand::seq::SliceRandom;
 
-use super::{environment::{Position, Positionable}, player::RotfPlayer};
+use crate::context::item_loader::ItemLoader;
+
+use super::environment::{Position, Positionable};
 
 
+// Struct containing data about a single item
 pub struct Item {
   id: u64,
   despawn: bool,
@@ -26,28 +28,23 @@ impl Positionable for Item {
 }
 
 impl Item {
-  pub fn new(id: u64) -> Item {
+  pub fn new(id: u64, level: u8) -> Item {
     return Item {
       id,
       despawn: false,
       position: Position::MEDIUM,
       view_index: 0,
-      level: 0,
+      level,
     }
   }
 
-  pub fn spawn(player: &RotfPlayer) -> Item {
-    let possible_ids = Item::possible_ids(player.tier());
-    match possible_ids.choose(&mut rand::thread_rng()) {
-      Some(id) => return Item::new(*id),
-      None => return Item::new(0),
-    }
+  pub fn despawn(&self) -> bool {
+    return self.despawn;
   }
 
-  fn possible_ids(tier: u8) -> Vec<u64> {
-    match tier {
-      _ => vec![],
-    }
+  pub fn view_short(&self, loader: &ItemLoader) -> String {
+    let data = loader.get_data(self.id);
+    return format!("{} ({})", data.name, self.level);
   }
 
   pub fn file_content(&self) -> String {

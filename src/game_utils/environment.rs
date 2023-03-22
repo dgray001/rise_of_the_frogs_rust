@@ -2,6 +2,7 @@ use std::fmt;
 use std::str::FromStr;
 use std::io::{Error, BufRead};
 
+use crate::context::item_loader::ItemLoader;
 use crate::context::unit_loader::UnitLoader;
 use crate::filesystem;
 
@@ -78,7 +79,7 @@ impl RotfEnvironment {
     self.time_passed += 1;
   }
 
-  pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader) {
+  pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     // allow units to move
     for unit in self.units.iter_mut() {
       unit.possible_move(self.time_passed.into());
@@ -92,10 +93,12 @@ impl RotfEnvironment {
       self.units.push(Unit::new(id, level));
     }
     // despawn items
+    self.items.retain(|i| !i.despawn());
     // spawn items
     let num_items = self.num_items(player.tier());
     while self.items.len() < num_items {
-      self.items.push(Item::spawn(player));
+      let (id, level) = item_loader.spawn();
+      self.items.push(Item::new(id, level));
     }
     // reset time
     self.time_passed = 0;
@@ -139,7 +142,7 @@ impl RotfEnvironment {
     let mut in_unit = false;
     let mut in_item = false;
     let mut curr_unit = Unit::new(0, 0);
-    let mut curr_item = Item::new(0);
+    let mut curr_item = Item::new(0, 0);
     for oline in filesystem::open_file(format!("data/saves/{}/environment.rotf", save_name))?.lines() {
       let line = oline?;
       match line.trim() {
@@ -157,7 +160,7 @@ impl RotfEnvironment {
         "%%% END ITEM" => {
           in_item = false;
           self.items.push(curr_item);
-          curr_item = Item::new(0);
+          curr_item = Item::new(0, 0);
         }
         _ => {},
       }

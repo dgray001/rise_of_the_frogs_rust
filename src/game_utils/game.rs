@@ -1,6 +1,7 @@
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
+use crate::context::item_loader::ItemLoader;
 use crate::context::unit_loader::UnitLoader;
 use crate::{filesystem, commands::Command, cutscene};
 
@@ -107,10 +108,10 @@ impl RotfGame {
     }
   }
 
-  pub fn update(&mut self, loader: &UnitLoader) {
+  pub fn update(&mut self, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     match self.state {
       GameState::ENVIRONMENT => {
-        self.environment.update(&self.player, loader);
+        self.environment.update(&self.player, unit_loader, item_loader);
       },
       _ => {},
     }

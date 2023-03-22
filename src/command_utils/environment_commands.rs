@@ -64,7 +64,7 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     if index == 1 {
       output_str += "\nItems\n";
     }
-    output_str += &format!("  {}: {}\n", index, item);
+    output_str += &format!("  {}: {}\n", index, item.view_short(&context.item_loader));
     index += 1;
   }
   context.println(output_str.as_str());

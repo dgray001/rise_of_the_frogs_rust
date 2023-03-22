@@ -78,8 +78,8 @@ impl Unit {
     self.position = new_position;
   }
 
-  pub fn view_short(&self, unit_loader: &UnitLoader) -> String {
-    let data = unit_loader.get_data(self.id);
+  pub fn view_short(&self, loader: &UnitLoader) -> String {
+    let data = loader.get_data(self.id);
     return format!("{} ({})", data.name, self.level);
   }
 

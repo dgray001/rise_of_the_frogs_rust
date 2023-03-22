@@ -10,6 +10,7 @@ use std::thread;
 use std::time::Duration;
 
 use self::unit_loader::UnitLoader;
+use self::item_loader::ItemLoader;
 
 pub mod unit_loader;
 pub mod item_loader;
@@ -44,7 +45,8 @@ pub struct RotfContext<R, W, E> where
   pub last_params: String,
 
   pub curr_game: Option<RotfGame>,
-  pub unit_loader: unit_loader::UnitLoader,
+  pub unit_loader: UnitLoader,
+  pub item_loader: ItemLoader,
 }
 
 impl<R, W, E> RotfContext<R, W, E> where
@@ -168,6 +170,7 @@ impl<R, W, E> RotfContext<R, W, E> where
   
       curr_game: None,
       unit_loader: UnitLoader::new(), // empty loader
+      item_loader: ItemLoader::new(), // empty loader
     };
     context.commands = commands::get_current_commands(&mut context);
     return context;
@@ -197,6 +200,14 @@ impl<R, W, E> RotfContext<R, W, E> where
     }
     self.unit_loader.update_current_units(&game.player);
     // load item data
+    match self.item_loader.load_data() {
+      Ok(()) => {},
+      Err(e) => {
+        self.print_error("loading item data", &e);
+        return;
+      },
+    }
+    self.item_loader.update_current_items(&game.player);
     // launch game
     self.curr_game = Some(game);
     self.context_state = ContextState::INGAME;

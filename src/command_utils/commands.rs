@@ -34,7 +34,7 @@ pub fn parse_command<R, W, E>(cmd: &str, context: &mut RotfContext<R, W, E>) whe
   // Update and save game
   match &mut context.curr_game {
     Some(game) => {
-      game.update(&context.unit_loader);
+      game.update(&context.unit_loader, &context.item_loader);
       match game.save() {
         Ok(()) => {},
         Err(e) => context.print_error("saving game", &e),
