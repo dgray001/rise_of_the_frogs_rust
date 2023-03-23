@@ -2,7 +2,7 @@ use std::{io::{Error, BufRead}, str::FromStr};
 
 use crate::{commands::Command, filesystem};
 
-use super::environment::{Positionable, Position};
+use super::{environment::{Positionable, Position}, item::Item};
 use super::inventory::Inventory;
 
 pub struct RotfPlayer {
@@ -45,13 +45,40 @@ impl RotfPlayer {
     let mut contents = String::new();
     contents += &format!("\nlevel: {}", self.level.clone());
     contents += &format!("\nview_distance: {}", self.view_distance);
+    // inventory
+    contents += "\n";
+    contents += &format!("\ncapacity: {}", self.inventory.capacity.clone());
+    for (key, item) in &self.inventory.items {
+      contents += &format!("\nnext_item_key: {}", key.clone());
+      contents += "\n%%% BEGIN ITEM";
+      contents += &item.file_content();
+      contents += "\n%%% END ITEM\n";
+    }
+    contents += &format!("\nnext_item_key: {}", self.inventory.next_item_key.clone());
     return contents;
   }
 
   pub fn load(&mut self, save_name: String) -> Result<(), Error> {
+    let mut in_item = false;
+    let mut curr_item = Item::new(0, 0);
     for oline in filesystem::open_file(format!("data/saves/{}/player.rotf", save_name))?.lines() {
       let line = oline?;
+      match line.trim() {
+        "%%% BEGIN ITEM" => {
+          in_item = true;
+        }
+        "%%% END ITEM" => {
+          in_item = false;
+          self.inventory.add(curr_item);
+          curr_item = Item::new(0, 0);
+        }
+        _ => {},
+      }
       if !line.clone().contains(":") {
+        continue;
+      }
+      if in_item {
+        curr_item.read_line(line);
         continue;
       }
       let (key, mut value) = line.split_once(":").unwrap();
@@ -65,6 +92,8 @@ impl RotfPlayer {
     match key {
       "level" => self.level = value.parse::<u8>().unwrap_or(0),
       "view_distance" => self.view_distance = Position::from_str(value).unwrap_or(Position::FAR),
+      "capacity" => self.inventory.capacity = value.parse::<usize>().unwrap_or(0),
+      "next_item_key" => self.inventory.next_item_key = value.parse::<u64>().unwrap_or(1),
       _ => {},
     }
   }

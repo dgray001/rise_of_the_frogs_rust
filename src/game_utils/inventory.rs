@@ -6,7 +6,7 @@ use super::item::Item;
 // Contains infinite items separable by group
 pub struct Inventory {
   pub items: HashMap<u64, Item>,
-  next_item_key: u64, // will never repeat keys
+  pub next_item_key: u64, // will never repeat keys
   pub capacity: usize,
 }
 

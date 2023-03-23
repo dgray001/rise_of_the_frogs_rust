@@ -232,7 +232,7 @@ impl Command {
       Command::VIEW => vec!["vw"],
       Command::WAIT => vec!["wt"],
       Command::FIGHT => vec!["fi"],
-      Command::PICKUP => vec!["pi"],
+      Command::PICKUP => vec!["pu"],
       Command::INVENTORY => vec!["inv"],
       _ => vec![],
     }

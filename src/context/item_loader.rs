@@ -17,6 +17,7 @@ pub struct ItemLoader {
   error_item_data: ItemData,
   current_items: Vec<u64>, // spawnable items (in level range)
   current_level: u8,
+  data_loaded: bool,
 }
 
 impl ItemLoader {
@@ -26,10 +27,14 @@ impl ItemLoader {
       error_item_data: ItemData::new(),
       current_items: Vec::new(),
       current_level: 0,
+      data_loaded: false,
     }
   }
 
   pub fn load_data(&mut self) -> Result<(), Error> {
+    if self.data_loaded {
+      return Ok(())
+    }
     for oline in filesystem::open_file(format!("data/items/data.csv"))?.lines() {
       let data: Vec<String> = oline?.trim().split(",").map(|s| s.to_string()).collect();
       if data.len() < 5 {
@@ -65,6 +70,7 @@ impl ItemLoader {
         None => {},
       }
     }
+    self.data_loaded = true;
     Ok(())
   }
 

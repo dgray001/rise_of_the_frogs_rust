@@ -17,6 +17,7 @@ pub struct UnitLoader {
   error_unit_data: UnitData,
   current_units: Vec<u64>, // spawnable units (in level range)
   current_level: u8,
+  data_loaded: bool,
 }
 
 impl UnitLoader {
@@ -26,10 +27,14 @@ impl UnitLoader {
       error_unit_data: UnitData::new(),
       current_units: Vec::new(),
       current_level: 0,
+      data_loaded: false,
     }
   }
 
   pub fn load_data(&mut self) -> Result<(), Error> {
+    if self.data_loaded {
+      return Ok(())
+    }
     for oline in filesystem::open_file(format!("data/units/data.csv"))?.lines() {
       let data: Vec<String> = oline?.trim().split(",").map(|s| s.to_string()).collect();
       if data.len() < 4 {
@@ -63,6 +68,7 @@ impl UnitLoader {
         None => {},
       }
     }
+    self.data_loaded = true;
     Ok(())
   }
 

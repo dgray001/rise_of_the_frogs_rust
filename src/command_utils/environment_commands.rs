@@ -170,8 +170,10 @@ fn inventory<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   display_string += &format!("Capacity: {}\n", game.player.inventory.capacity);
   display_string += "Items:\n";
   // eventually pass param as filter to filter list
+  let mut index = 0;
   for item in game.player.inventory.list() {
-    display_string += &format!("  {}\n", item.to_string());
+    index += 1;
+    display_string += &format!("  {}: {}\n", index, item.view_short(&context.item_loader));
   }
   context.println(display_string.as_str());
 }

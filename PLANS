@@ -1,23 +1,25 @@
 This file outlines known bugs, planned features, and tracks progress on current development
 
-v0.2.9: Fix data loader bug
- 7: Inv cmd opens a new GameState
- 8: Pickup / drop cmds
- 9: Condition struct (used for achivements/quests/unlockables/etc...)
+v0.2.10: Player saves inventory
+ 11: Drop cmd
+ 12: Damageable / Combatable traits
+ 13: Units have combat abilities
+ 14: Turn-based combat
+ 15: Fight command / unit can attack
+ 16: Units have drops
+ 18: Player XP / leveling up
+ 19: Tier up (next chapter / cutscene)
+
  10: Experience and leveling up
  11: Tier up (next chapter / cutscene)
  12: Use cmd
  13: Equip cmd (Item has type)
  14: Player unlockables
  15: Achievements
- 16: Damageable trait
- 17: Combatable trait extends Damageable
+ 17: Condition struct (used for unlockables, achievements, etc...)
  18: Environment features (Damageable)
  19: Quests
  20: Currency (2 types)
- 21: Combat abilities for each unit
- 22: Simple turn-based combat
- 23: Units have drops
  24: Death logic (lose some items which will be recoverable for a fee, also lose currency/xp)
 
 v0.4: Chapter I
@@ -26,6 +28,7 @@ v0.4: Chapter I
  - Need a condition to unlock tier II (just player level?)
  - Need easter egg
  - Tadpole phase
+ - Can have a gamestate of being in inventory
 
 v0.5: Chapter II
  - Tadpole with legs
