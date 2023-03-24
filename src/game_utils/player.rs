@@ -1,4 +1,6 @@
-use std::{io::{Error, BufRead}, str::FromStr};
+use std::io::{Error, BufRead};
+use std::str::FromStr;
+use std::collections::HashSet;
 
 use crate::{commands::Command, filesystem};
 
@@ -6,19 +8,24 @@ use super::environment::Position;
 use super::traits::Positionable;
 use super::item::Item;
 use super::inventory::Inventory;
+use super::ability::Ability;
 
 pub struct RotfPlayer {
   pub level: u8,
   pub view_distance: Position,
   pub inventory: Inventory,
+  pub abilities: HashSet<Ability>,
 }
 
 impl RotfPlayer {
   pub fn new() -> RotfPlayer {
+    let mut abilities = HashSet::new();
+    abilities.insert(Ability::NOTHING);
     return RotfPlayer {
       level: 0,
       view_distance: Position::NEAR,
       inventory: Inventory::new(),
+      abilities,
     }
   }
 
@@ -58,6 +65,9 @@ impl RotfPlayer {
       contents += "\n%%% END ITEM\n";
     }
     contents += &format!("\nnext_item_key: {}", self.inventory.next_item_key.clone());
+    for ability in &self.abilities {
+      contents += &format!("\nability: {}", ability);
+    }
     return contents;
   }
 
@@ -97,6 +107,9 @@ impl RotfPlayer {
       "view_distance" => self.view_distance = Position::from_str(value).unwrap_or(Position::FAR),
       "capacity" => self.inventory.capacity = value.parse::<usize>().unwrap_or(0),
       "next_item_key" => self.inventory.next_item_key = value.parse::<u64>().unwrap_or(1),
+      "ability" => {
+        self.abilities.insert(Ability::from_str(value).unwrap_or(Ability::NOTHING));
+      },
       _ => {},
     }
   }

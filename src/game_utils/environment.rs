@@ -2,6 +2,9 @@ use std::fmt;
 use std::str::FromStr;
 use std::io::{Error, BufRead};
 
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
 use crate::context::item_loader::ItemLoader;
 use crate::context::unit_loader::UnitLoader;
 use crate::filesystem;
@@ -10,9 +13,6 @@ use super::player::RotfPlayer;
 use super::unit::Unit;
 use super::item::Item;
 use super::traits::Positionable;
-
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
 
 
 // Relative to player in environment

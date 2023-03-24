@@ -34,6 +34,8 @@ pub trait Damageable {
   fn heal(&mut self, amount: f64);
   fn health(&self) -> f64;
   fn max_health(&self) -> f64;
+  fn defense(&self) -> f64;
+  fn resistance(&self) -> f64;
 }
 
 
@@ -41,8 +43,6 @@ pub trait Damageable {
 pub struct CombatStats {
   attack: f64,
   magic: f64,
-  defense: f64,
-  resistance: f64,
   piercing: f64,
   penetration: f64,
 }
@@ -52,8 +52,6 @@ impl CombatStats {
     return CombatStats {
       attack: 0.0,
       magic: 0.0,
-      defense: 0.0,
-      resistance: 0.0,
       piercing: 0.0,
       penetration: 0.0,
     }
@@ -61,21 +59,52 @@ impl CombatStats {
 }
 
 
+// Enum describing the types of damage
+pub enum DamageType {
+  PHYSICAL,
+  MAGICAL,
+  MIXED,
+  TRUE,
+}
+
+
 // Trait for combat
 pub trait Combatable : Damageable {
   fn use_ability(&mut self, ability: Ability, target: &mut dyn Damageable) {
     // get attacker's stats
-    let (ability_extra, ability_factors) = ability.get_stats();
-    let attack = (ability_extra.attack + self.attack()) * ability_factors.attack;
-    let magic = (ability_extra.magic + self.magic()) * ability_factors.magic;
-    let piercing = (ability_extra.piercing + self.piercing()) * ability_factors.piercing;
-    let penetration = (ability_extra.penetration + self.penetration()) * ability_factors.penetration;
+    let (ability_extras, ability_factors, damage_type) = ability.get_stats();
+    let attack = (ability_extras.attack + self.attack()) * ability_factors.attack;
+    let magic = (ability_extras.magic + self.magic()) * ability_factors.magic;
+    let piercing = (ability_extras.piercing + self.piercing()) * ability_factors.piercing;
+    let penetration = (ability_extras.penetration + self.penetration()) * ability_factors.penetration;
+    // get defender's stats
+    let defense = target.defense();
+    let resistance = target.resistance();
+    // calculate effective defense
+    let mut effective_defense = 0.0;
+    match damage_type {
+      DamageType::PHYSICAL => {
+        effective_defense = (1.0 - piercing) * defense;
+      },
+      DamageType::MAGICAL => {
+        effective_defense = (1.0 - penetration) * resistance;
+      },
+      DamageType::MIXED => {
+        effective_defense = (1.0 - piercing) * defense + (1.0 - penetration) * resistance;
+      },
+      DamageType::TRUE => {},
+    }
+    // calculate damage
+    let mut damage = attack + magic - effective_defense;
+    if damage < ability.minimum_damage() {
+      damage = ability.minimum_damage();
+    }
+    // apply damage
+    target.damage(damage);
   }
 
   fn attack(&self) -> f64;
   fn magic(&self) -> f64;
-  fn defense(&self) -> f64;
-  fn resistance(&self) -> f64;
   fn piercing(&self) -> f64;
   fn penetration(&self) -> f64;
 }

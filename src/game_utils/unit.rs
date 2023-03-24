@@ -4,6 +4,7 @@ use crate::numeric::random_chance;
 use crate::context::constants;
 use crate::context::unit_loader::UnitLoader;
 
+use super::ability::Ability;
 use super::environment::Position;
 use super::traits::Positionable;
 
@@ -41,6 +42,12 @@ impl Unit {
       position: Position::FAR,
       view_index: 0,
       level,
+    }
+  }
+
+  pub fn abilities(&self) -> Vec<Ability> {
+    match self.id {
+      _ => vec![Ability::NOTHING],
     }
   }
 

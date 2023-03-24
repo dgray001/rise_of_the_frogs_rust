@@ -1,7 +1,6 @@
 This file outlines known bugs, planned features, and tracks progress on current development
 
-v0.2.12: Damageable / Combatable traits
- 13: Units have combat abilities
+v0.2.13: Abilities
  14: Turn-based combat
  15: Fight command / unit can attack
  16: Units have drops
