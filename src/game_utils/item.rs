@@ -1,10 +1,11 @@
 use std::{fmt, str::FromStr};
 
-use crate::numeric::{random_chance, random_int};
+use crate::numeric::random_chance;
 use crate::context::constants;
 use crate::context::item_loader::ItemLoader;
 
-use super::environment::{Position, Positionable};
+use super::environment::Position;
+use super::traits::Positionable;
 
 
 // Struct containing data about a single item
@@ -26,13 +27,6 @@ impl fmt::Display for Item {
 impl Positionable for Item {
   fn position(&self) -> Position {
     return self.position.clone();
-  }
-  fn randomize_position(&mut self) {
-    match random_int(1, 3) {
-      1 => self.position = Position::NEAR,
-      2 => self.position = Position::MEDIUM,
-      _ => self.position = Position::FAR,
-    }
   }
   fn set_position(&mut self, position: Position) {
     self.position = position;

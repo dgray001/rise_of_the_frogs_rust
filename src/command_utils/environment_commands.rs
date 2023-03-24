@@ -2,7 +2,7 @@ use std::io::{BufRead, Write};
 
 use crate::context;
 use crate::game::GameState;
-use crate::game::environment::Positionable;
+use crate::game::traits::Positionable;
 use crate::game::environment::Position;
 
 

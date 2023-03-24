@@ -9,6 +9,7 @@ use crate::filesystem;
 use super::player::RotfPlayer;
 use super::unit::Unit;
 use super::item::Item;
+use super::traits::Positionable;
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
@@ -49,14 +50,6 @@ impl Position {
       Position::FAR => 3,
     }
   }
-}
-
-
-// Trait for position
-pub trait Positionable {
-  fn position(&self) -> Position;
-  fn randomize_position(&mut self);
-  fn set_position(&mut self, position: Position);
 }
 
 

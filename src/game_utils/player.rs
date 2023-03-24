@@ -2,7 +2,9 @@ use std::{io::{Error, BufRead}, str::FromStr};
 
 use crate::{commands::Command, filesystem};
 
-use super::{environment::{Positionable, Position}, item::Item};
+use super::environment::Position;
+use super::traits::Positionable;
+use super::item::Item;
 use super::inventory::Inventory;
 
 pub struct RotfPlayer {

@@ -11,9 +11,11 @@ use std::str::FromStr;
 
 pub mod player;
 pub mod environment;
+pub mod traits;
 mod unit;
 mod item;
 mod inventory;
+mod ability;
 
 
 // GameState determines available commands
