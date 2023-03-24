@@ -45,7 +45,7 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   let game = context.curr_game.as_mut().unwrap();
   let mut output_str = String::new();
   let mut index = 1;
-  for unit in game.environment.units.iter_mut() {
+  for (_, unit) in game.environment.units.iter_mut() {
     if unit.despawn() || !game.player.can_view(unit) {
       unit.view_index = -1;
       continue;
@@ -58,7 +58,7 @@ fn view<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     index += 1;
   }
   index = 1;
-  for item in game.environment.items.iter_mut() {
+  for (_, item) in game.environment.items.iter_mut() {
     if !game.player.can_view(item) {
       item.view_index = -1;
       continue;
@@ -95,7 +95,7 @@ fn fight<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   }
   let game = context.curr_game.as_mut().unwrap();
   let mut fight_unit = None;
-  for unit in game.environment.units.iter() {
+  for (_, unit) in game.environment.units.iter() {
     if unit.view_index != index {
       continue;
     }
@@ -132,15 +132,15 @@ fn pickup<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     return;
   }
   let mut pickup_index = None;
-  for (i, item) in game.environment.items.iter().enumerate() {
+  for (i, item) in game.environment.items.iter() {
     if item.view_index != index {
       continue;
     }
-    pickup_index = Some(i);
+    pickup_index = Some(i.clone());
   }
   match pickup_index {
     Some(i) => {
-      let item = game.environment.items.remove(i);
+      let item = game.environment.items.remove(&i).unwrap();
       if !game.player.can_view(&item) {
         context.println("Item no longer in view. Use 'view' to update view");
         return;
@@ -148,7 +148,7 @@ fn pickup<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
       let item_string = item.to_string();
       match game.player.inventory.add(item) {
         Some(it) => {
-          game.environment.items.push(it);
+          game.environment.add_item(it);
           context.println("Inventory full");
         },
         None => {
@@ -202,7 +202,7 @@ fn drop<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     Some(mut item) => {
       item.set_position(Position::NEAR);
       let item_string = item.view_short(&context.item_loader);
-      game.environment.items.push(item);
+      game.environment.add_item(item);
       context.println(&format!("Dropped {}", item_string));
     },
     None => {

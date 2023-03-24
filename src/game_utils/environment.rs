@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt;
 use std::str::FromStr;
 use std::io::{Error, BufRead};
@@ -55,8 +56,10 @@ impl Position {
 
 // Environment player is in
 pub struct RotfEnvironment {
-  pub units: Vec<Unit>,
-  pub items: Vec<Item>,
+  pub units: HashMap<u64, Unit>,
+  pub next_unit_key: u64, // will never repeat keys
+  pub items: HashMap<u64, Item>,
+  pub next_item_key: u64, // will never repeat keys
 
   time_passed: u8, // time that needs to pass
 }
@@ -64,10 +67,22 @@ pub struct RotfEnvironment {
 impl RotfEnvironment {
   pub fn new() -> RotfEnvironment {
     return RotfEnvironment {
-      units: vec![],
-      items: vec![],
+      units: HashMap::new(),
+      next_unit_key: 1,
+      items: HashMap::new(),
+      next_item_key: 1,
       time_passed: 0,
     }
+  }
+
+  pub fn add_unit(&mut self, unit: Unit) {
+    self.units.insert(self.next_unit_key, unit);
+    self.next_unit_key += 1;
+  }
+
+  pub fn add_item(&mut self, item: Item) {
+    self.items.insert(self.next_item_key, item);
+    self.next_item_key += 1;
   }
 
   pub fn pass_time(&mut self) {
@@ -84,7 +99,7 @@ impl RotfEnvironment {
       }
       let mut new_unit = Unit::new(id, level);
       new_unit.randomize_position();
-      self.units.push(new_unit);
+      self.add_unit(new_unit);
     }
     // spawn items
     let num_items = self.num_items(player.tier());
@@ -95,17 +110,17 @@ impl RotfEnvironment {
       }
       let mut new_item = Item::new(id, level);
       new_item.randomize_position();
-      self.items.push(new_item);
+      self.add_item(new_item);
     }
   }
 
   pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     // allow units to move
-    for unit in self.units.iter_mut() {
+    for (_, unit) in self.units.iter_mut() {
       unit.possible_move(self.time_passed.into());
     }
     // despawn units
-    self.units.retain(|u| !u.despawn());
+    self.units.retain(|_, u| !u.despawn());
     // respawn units
     let num_units = self.num_units(player.tier());
     if num_units > self.units.len() {
@@ -115,15 +130,15 @@ impl RotfEnvironment {
         if id < 1 {
           continue;
         }
-        self.units.push(Unit::new(id, level));
+        self.add_unit(Unit::new(id, level));
       }
     }
     // allow items to move
-    for item in self.items.iter_mut() {
+    for (_, item) in self.items.iter_mut() {
       item.possible_move(self.time_passed.into());
     }
     // despawn items
-    self.items.retain(|i| !i.despawn());
+    self.items.retain(|_, i| !i.despawn());
     // respawn items
     let num_items = self.num_items(player.tier());
     if num_items > self.items.len() {
@@ -133,7 +148,7 @@ impl RotfEnvironment {
         if id < 1 {
           continue;
         }
-        self.items.push(Item::new(id, level));
+        self.add_item(Item::new(id, level));
       }
     }
     // reset time
@@ -160,18 +175,22 @@ impl RotfEnvironment {
     contents += &format!("\ntime_passed: {}", self.time_passed);
     // units
     contents += "\n";
-    for unit in &self.units {
+    for (i, unit) in &self.units {
+      contents += &format!("\nnext_unit_key: {}", i.clone());
       contents += "\n%%% BEGIN UNIT";
       contents += &unit.file_content();
       contents += "\n%%% END UNIT\n";
     }
+    contents += &format!("\nnext_unit_key: {}", self.next_unit_key);
     // items
     contents += "\n";
-    for item in &self.items {
+    for (i, item) in &self.items {
+      contents += &format!("\nnext_item_key: {}", i.clone());
       contents += "\n%%% BEGIN ITEM";
       contents += &item.file_content();
       contents += "\n%%% END ITEM\n";
     }
+    contents += &format!("\nnext_unit_key: {}", self.next_item_key);
     return contents;
   }
 
@@ -188,7 +207,7 @@ impl RotfEnvironment {
         }
         "%%% END UNIT" => {
           in_unit = false;
-          self.units.push(curr_unit);
+          self.add_unit(curr_unit);
           curr_unit = Unit::new(0, 0);
         }
         "%%% BEGIN ITEM" => {
@@ -196,7 +215,7 @@ impl RotfEnvironment {
         }
         "%%% END ITEM" => {
           in_item = false;
-          self.items.push(curr_item);
+          self.add_item(curr_item);
           curr_item = Item::new(0, 0);
         }
         _ => {},

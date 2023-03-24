@@ -16,6 +16,7 @@ mod unit;
 mod item;
 mod inventory;
 mod ability;
+mod combat;
 
 
 // GameState determines available commands
@@ -80,6 +81,22 @@ impl FromStr for RotfDifficulty {
 }
 
 
+// Struct containing information necessary to identify a unit
+pub struct UnitIdentifier {
+  is_player: bool,
+  unit_index: u64,
+}
+
+impl UnitIdentifier {
+  pub fn new() -> UnitIdentifier {
+    return UnitIdentifier {
+      is_player: false,
+      unit_index: 0,
+    }
+  }
+}
+
+
 // RotfGame is a struct with all game information, including the environment and player
 pub struct RotfGame {
   pub name: String,
@@ -89,6 +106,7 @@ pub struct RotfGame {
 
   pub player: player::RotfPlayer,
   pub environment: environment::RotfEnvironment,
+  pub combat: Option<combat::RotfCombat>,
 }
 
 impl RotfGame {
@@ -100,6 +118,7 @@ impl RotfGame {
       last_cutscene: cutscene::RotfCutscene::LAUNCH_GAME,
       player: player::RotfPlayer::new(),
       environment: environment::RotfEnvironment::new(),
+      combat: None,
     }
   }
 
