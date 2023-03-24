@@ -2,6 +2,8 @@ use std::io::{BufRead, Write};
 
 use crate::context;
 use crate::game::GameState;
+use crate::game::environment::Positionable;
+use crate::game::environment::Position;
 
 
 // Ensures command is a valid environment command and context can take one
@@ -19,6 +21,7 @@ pub fn command<R, W, E>(context: &mut context::RotfContext<R, W, E>, cmd: &str) 
           "fight" => fight(context),
           "pickup" => pickup(context),
           "inventory" => inventory(context),
+          "drop" => drop(context),
           _ => context.eprintln(format!("Environment command {} not implemented", cmd).as_str()),
         }
       }
@@ -176,4 +179,34 @@ fn inventory<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
     display_string += &format!("  {}: {}\n", index, item.view_short(&context.item_loader));
   }
   context.println(display_string.as_str());
+}
+
+fn drop<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
+  R: BufRead,
+  W: Write,
+  E: Write,
+{
+  let game = context.curr_game.as_mut().unwrap();
+  let index: i64;
+  match context.last_params.as_str() {
+    "" => {
+      context.println("Need to specify an item to drop");
+      context.println("Use 'inventory' to see your items or 'help drop' for more information");
+      return;
+    }
+    _ => {
+      index = context.last_params.parse::<i64>().unwrap_or(-1);
+    }
+  }
+  match game.player.inventory.drop(index) {
+    Some(mut item) => {
+      item.set_position(Position::NEAR);
+      let item_string = item.view_short(&context.item_loader);
+      game.environment.items.push(item);
+      context.println(&format!("Dropped {}", item_string));
+    },
+    None => {
+      context.println("Item not found");
+    },
+  }
 }

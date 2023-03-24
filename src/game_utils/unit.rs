@@ -34,6 +34,9 @@ impl Positionable for Unit {
       _ => self.position = Position::FAR,
     }
   }
+  fn set_position(&mut self, position: Position) {
+    self.position = position;
+  }
 }
 
 impl Unit {

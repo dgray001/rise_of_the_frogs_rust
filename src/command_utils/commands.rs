@@ -67,6 +67,7 @@ pub enum Command {
   FIGHT,
   PICKUP,
   INVENTORY,
+  DROP,
   // GameState::COMBAT Commands
   FLEE,
 }
@@ -115,6 +116,7 @@ impl Command {
       Command::FIGHT => "fight",
       Command::PICKUP => "pickup",
       Command::INVENTORY => "inventory",
+      Command::DROP => "drop",
       // GameState::COMBAT Commands
       _ => "",
     }
@@ -140,6 +142,7 @@ impl Command {
       Command::FIGHT => "Fight the specified unit in your view",
       Command::PICKUP => "Pickup the specified item in your view",
       Command::INVENTORY => "View your inventory",
+      Command::DROP => "Drop an item",
       // GameState::COMBAT Commands
       _ => "Not implemented",
     }
@@ -218,6 +221,11 @@ impl Command {
       Command::INVENTORY => {
         context.println("View the contents of your inventory");
       },
+      Command::DROP => {
+        context.println("Usage: 'drop {{arg}}'");
+        context.println("Arg is the index of the inventory item to drop");
+        context.println("You can see the index of your inventory items with 'inventory'");
+      },
       // GameState::COMBAT Commands
       _ => {
         context.println("Not implemented.");
@@ -257,7 +265,8 @@ impl Command {
       Command::ME => context_state_commands::me(context),
       Command::SAVE => context_state_commands::save(context),
       // GameState::ENVIRONMENT Commands
-      Command::VIEW | Command::WAIT |  Command::FIGHT | Command::PICKUP | Command::INVENTORY => {
+      Command::VIEW | Command::WAIT |  Command::FIGHT | Command::PICKUP |
+      Command::INVENTORY | Command::DROP => {
         environment_commands::command(context, self.name());
       },
       // GameState::COMBAT Commands

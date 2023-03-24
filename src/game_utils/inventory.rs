@@ -32,6 +32,18 @@ impl Inventory {
     return Some(item);
   }
 
+  pub fn drop(&mut self, index: i64) -> Option<Item> {
+    let mut remove_index = 0;
+    for (i, item) in self.items.iter() {
+      if index != item.view_index {
+        continue;
+      }
+      remove_index = *i;
+      break;
+    }
+    return self.items.remove(&remove_index);
+  }
+
   pub fn list(&self) -> Vec<&Item> {
     let mut list = vec![];
     for (_, item) in self.items.iter() {
