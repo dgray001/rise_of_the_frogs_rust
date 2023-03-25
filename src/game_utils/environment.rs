@@ -114,10 +114,15 @@ impl RotfEnvironment {
     }
   }
 
-  pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
+  pub fn update(&mut self, player: &RotfPlayer, unit_loader: &UnitLoader,
+    item_loader: &ItemLoader) -> Option<u64> {
+    // return unit that attacks player (if any)
+    let mut attacking_unit: Option<u64> = None;
     // allow units to move
-    for (_, unit) in self.units.iter_mut() {
-      unit.possible_move(self.time_passed.into());
+    for (i, unit) in self.units.iter_mut() {
+      if unit.possible_move(self.time_passed.into()) {
+        attacking_unit = Some(i.clone());
+      }
     }
     // despawn units
     self.units.retain(|_, u| !u.despawn());
@@ -153,6 +158,8 @@ impl RotfEnvironment {
     }
     // reset time
     self.time_passed = 0;
+    // return attacking unit
+    return attacking_unit;
   }
 
   fn num_units(&self, tier: u8) -> usize {

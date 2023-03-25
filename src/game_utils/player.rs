@@ -34,6 +34,10 @@ impl RotfPlayer {
       Command::INVENTORY, Command::DROP];
   }
 
+  pub fn combat_commands(&self) -> Vec<Command> {
+    return vec![];
+  }
+
   pub fn can_view(&self, thing: &dyn Positionable) -> bool {
     return self.view_distance.distance() >= thing.position().distance();
   }

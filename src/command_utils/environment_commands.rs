@@ -95,11 +95,13 @@ fn fight<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
   }
   let game = context.curr_game.as_mut().unwrap();
   let mut fight_unit = None;
-  for (_, unit) in game.environment.units.iter() {
+  let mut unit_index = 0;
+  for (i, unit) in game.environment.units.iter() {
     if unit.view_index != index {
       continue;
     }
     fight_unit = Some(unit);
+    unit_index = *i;
   }
   match fight_unit {
     Some(unit) => {
@@ -108,7 +110,7 @@ fn fight<R, W, E>(context: &mut context::RotfContext<R, W, E>) where
         return;
       }
       game.environment.pass_time();
-      context.println("FIGHT");
+      game.enter_combat(unit_index, true);
     },
     None => {
       context.println("Unit not found")

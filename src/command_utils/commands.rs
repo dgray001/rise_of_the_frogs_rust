@@ -1,6 +1,7 @@
 mod system_commands;
 mod context_state_commands;
 mod environment_commands;
+mod combat_commands;
   
 use std::{collections::HashMap, io::{Write, BufRead}};
 
@@ -70,6 +71,7 @@ pub enum Command {
   DROP,
   // GameState::COMBAT Commands
   FLEE,
+  ATTACK,
 }
 
 impl Command {

@@ -3,11 +3,15 @@ use strum_macros::EnumIter;
 
 use crate::context::item_loader::ItemLoader;
 use crate::context::unit_loader::UnitLoader;
-use crate::{filesystem, commands::Command, cutscene};
+use crate::filesystem;
+use crate::commands::Command;
+use crate::cutscene;
 
 use std::fmt;
 use std::io::{Error, BufRead};
 use std::str::FromStr;
+
+use self::combat::RotfCombat;
 
 pub mod player;
 pub mod environment;
@@ -24,6 +28,7 @@ mod combat;
 pub enum GameState {
   CUTSCENE,
   ENVIRONMENT,
+  COMBAT,
 }
 
 impl fmt::Display for GameState {
@@ -122,6 +127,26 @@ impl RotfGame {
     }
   }
 
+  pub fn enter_combat(&mut self, unit_index: u64, player_start: bool) {
+    let mut combat = RotfCombat::new();
+    combat.add_team("player", vec![UnitIdentifier {
+      is_player: true,
+      unit_index: 0,
+    }]);
+    combat.add_team("enemy", vec![UnitIdentifier {
+      is_player: false,
+      unit_index,
+    }]);
+    if player_start {
+      combat.turn = 0;
+    }
+    else {
+      combat.turn = 1;
+    }
+    self.combat = Some(combat);
+    self.state = GameState::COMBAT;
+  }
+
   pub fn initial_spawns(&mut self, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     self.environment.initial_spawns(&self.player, unit_loader, item_loader);
   }
@@ -130,13 +155,19 @@ impl RotfGame {
     match self.state {
       GameState::CUTSCENE => vec![],
       GameState::ENVIRONMENT => self.player.environment_commands(),
+      GameState::COMBAT => self.player.combat_commands(),
     }
   }
 
   pub fn update(&mut self, unit_loader: &UnitLoader, item_loader: &ItemLoader) {
     match self.state {
       GameState::ENVIRONMENT => {
-        self.environment.update(&self.player, unit_loader, item_loader);
+        match self.environment.update(&self.player, unit_loader, item_loader) {
+          Some(i) => {
+            self.enter_combat(i, false);
+          },
+          None => {},
+        }
       },
       _ => {},
     }

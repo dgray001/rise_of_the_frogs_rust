@@ -55,10 +55,12 @@ impl Unit {
     return self.despawn;
   }
 
-  pub fn possible_move(&mut self, time: f64) {
+  // Return whether unit attacks player or not
+  pub fn possible_move(&mut self, time: f64) -> bool {
+    let mut attack_player = false;
     let chance_moved = time * constants::UNIT_MOVE_CHANCE;
     if random_chance(1.0 - chance_moved) {
-      return;
+      return attack_player;
     }
     let mut new_position = self.position.clone();
     match self.position {
@@ -83,11 +85,12 @@ impl Unit {
           new_position = Position::MEDIUM;
         }
         else {
-          // try to attack player
+          attack_player = true;
         }
       },
     }
     self.position = new_position;
+    return attack_player;
   }
 
   pub fn view_short(&self, loader: &UnitLoader) -> String {
